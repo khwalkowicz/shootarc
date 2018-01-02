@@ -46,3 +46,14 @@ void renderTexture(SDL_Texture* tex, SDL_Renderer* ren, uint x, uint y) {
     SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
     SDL_RenderCopy(ren, tex, NULL, &dest);
 }
+
+double approach(double goal, double curr, double deltaTime) {
+    double diff = goal - curr;
+    if(diff > deltaTime) {
+        return curr + deltaTime;
+    }
+    if(diff < -deltaTime) {
+        return curr - deltaTime;
+    }
+    return goal;
+}

@@ -19,4 +19,6 @@ SDL_Texture* loadTexture(SDL_Renderer* ren, char* str);
 
 void renderTexture(SDL_Texture* tex, SDL_Renderer* ren, uint x, uint y);
 
+double approach(double goal, double curr, double deltaTime);
+
 #endif //GAME_FUNCTIONS_H

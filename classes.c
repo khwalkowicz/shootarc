@@ -25,7 +25,8 @@ Player Player_init(SDL_Renderer* ren) {
     player.super.h = 75;
     player.super.super.x = 25;
     player.super.super.y = SCREEN_HEIGHT / 2 - player.super.h / 2;
-    player.acc = 200.0;
+    player.speed = 0.0;
+    player.speedGoal = 0.0;
     player.tex_up = loadTexture(ren, "player_up.png");
     player.tex_norm = loadTexture(ren, "player.png");
     player.tex_down = loadTexture(ren, "player_down.png");
@@ -33,27 +34,9 @@ Player Player_init(SDL_Renderer* ren) {
     return player;
 }
 
-void Player_move(Player *player, Background* bg, SDL_Keycode key,
-                 uint keyDown, double timeDelta) {
-    if(keyDown) {
-        if(key == SDLK_UP || key == SDLK_w) {
-            player->super.super.y -= player->acc * timeDelta * timeDelta;
-            player->super.tex = player->tex_up;
-        }
-        if(key == SDLK_DOWN || key == SDLK_s) {
-            player->super.super.y += player->acc * timeDelta * timeDelta;
-            player->super.tex = player->tex_down;
-        }
-        if(key == SDLK_RIGHT || key == SDLK_d) {
-            bg->speed *= 2;
-        }
-    } else {
-        if(key == SDLK_UP || key == SDLK_w ||
-           key == SDLK_DOWN || key == SDLK_s)
-            player->super.tex = player->tex_norm;
-        if(key == SDLK_RIGHT || key == SDLK_d)
-            bg->speed = 0.10;
-    }
+void Player_update(Player* obj, float timeDelta) {
+    obj->speed = approach(obj->speedGoal, obj->speed, timeDelta * 50);
+    obj->super.super.y += obj->speed * timeDelta;
 }
 
 void Player_destroy(Player obj) {
@@ -127,5 +110,30 @@ void Background_render(Background obj, SDL_Renderer* ren) {
 void Background_destroy(Background obj) {
     for(uint i = 0; i < obj.size; i++) {
         SDL_DestroyTexture(obj.array[i].tex);
+    }
+}
+
+void Win_controls(Player *player, Background* bg,
+                  SDL_Keycode key, uint keyDown) {
+    if(keyDown) {
+        if(key == SDLK_UP || key == SDLK_w) {
+            player->speedGoal = -50;
+            player->super.tex = player->tex_up;
+        }
+        if(key == SDLK_DOWN || key == SDLK_s) {
+            player->speedGoal = 50;
+            player->super.tex = player->tex_down;
+        }
+        if(key == SDLK_RIGHT || key == SDLK_d) {
+            bg->speed *= 2;
+        }
+    } else {
+        if(key == SDLK_UP || key == SDLK_w ||
+           key == SDLK_DOWN || key == SDLK_s) {
+            player->speedGoal = 0;
+            player->super.tex = player->tex_norm;
+        }
+        if(key == SDLK_RIGHT || key == SDLK_d)
+            bg->speed = 0.10;
     }
 }
