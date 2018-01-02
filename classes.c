@@ -25,7 +25,7 @@ Player Player_init(SDL_Renderer* ren) {
     player.super.h = 75;
     player.super.super.x = 25;
     player.super.super.y = SCREEN_HEIGHT / 2 - player.super.h / 2;
-    player.acc = 100.0;
+    player.acc = 200.0;
     player.tex_up = loadTexture(ren, "player_up.png");
     player.tex_norm = loadTexture(ren, "player.png");
     player.tex_down = loadTexture(ren, "player_down.png");
@@ -33,7 +33,8 @@ Player Player_init(SDL_Renderer* ren) {
     return player;
 }
 
-void Player_move(Player *player, SDL_Keycode key, uint keyDown, double timeDelta) {
+void Player_move(Player *player, Background* bg, SDL_Keycode key,
+                 uint keyDown, double timeDelta) {
     if(keyDown) {
         if(key == SDLK_UP || key == SDLK_w) {
             player->super.super.y -= player->acc * timeDelta * timeDelta;
@@ -43,9 +44,15 @@ void Player_move(Player *player, SDL_Keycode key, uint keyDown, double timeDelta
             player->super.super.y += player->acc * timeDelta * timeDelta;
             player->super.tex = player->tex_down;
         }
+        if(key == SDLK_RIGHT || key == SDLK_d) {
+            bg->speed *= 2;
+        }
     } else {
-        if(key == SDLK_UP || key == SDLK_w || key == SDLK_DOWN || key == SDLK_s)
+        if(key == SDLK_UP || key == SDLK_w ||
+           key == SDLK_DOWN || key == SDLK_s)
             player->super.tex = player->tex_norm;
+        if(key == SDLK_RIGHT || key == SDLK_d)
+            bg->speed = 0.10;
     }
 }
 
@@ -58,6 +65,7 @@ void Player_destroy(Player obj) {
 Background Background_init(SDL_Renderer* ren) {
     Background obj;
     obj.move = 0.0;
+    obj.speed = 0.1;
     obj.path = "sky/";
     obj.tile_h = 180;
     obj.tile_w = 120;
@@ -84,14 +92,17 @@ Background Background_init(SDL_Renderer* ren) {
 
 void Background_scroll(Background* obj, SDL_Renderer* ren, float timeDelta) {
     obj->move += timeDelta;
-    if(obj->move >= 10.0) {
+    if(obj->move >= (1 / obj->speed)) {
         obj->move = 0.0;
         for (uint h_i = 0; h_i < obj->tiles_y; h_i++) {
             SDL_DestroyTexture(obj->array[h_i * obj->tiles_x].tex);
             for (uint w_i = 0; w_i < obj->tiles_x - 1; w_i++) {
-                obj->array[h_i * obj->tiles_x + w_i] = obj->array[h_i * obj->tiles_x + w_i + 1];
-                obj->array[h_i * obj->tiles_x + w_i].super.x = w_i * obj->array[h_i * obj->tiles_x + w_i].w;
-                obj->array[h_i * obj->tiles_x + w_i].super.y = h_i * obj->array[h_i * obj->tiles_x + w_i].h;
+                obj->array[h_i * obj->tiles_x + w_i] =
+                        obj->array[h_i * obj->tiles_x + w_i + 1];
+                obj->array[h_i * obj->tiles_x + w_i].super.x =
+                        w_i * obj->array[h_i * obj->tiles_x + w_i].w;
+                obj->array[h_i * obj->tiles_x + w_i].super.y =
+                        h_i * obj->array[h_i * obj->tiles_x + w_i].h;
             }
             Rect tile;
             tile.h = obj->tile_h;

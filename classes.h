@@ -36,6 +36,7 @@ typedef struct Background {
     uint tiles_x;
     char* path;
     double move;
+    double speed; //acceleration
     Rect* array;
 } Background;
 
@@ -43,7 +44,8 @@ void Rect_render(Rect obj, SDL_Renderer* ren);
 void Rect_destroy(Rect obj);
 
 Player Player_init(SDL_Renderer* ren);
-void Player_move(Player *player, SDL_Keycode key, uint keyDown, double timeDelta);
+void Player_move(Player *player, Background* bg, SDL_Keycode key,
+                 uint keyDown, double timeDelta);
 void Player_destroy(Player obj);
 
 Background Background_init(SDL_Renderer* ren);

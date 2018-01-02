@@ -63,9 +63,9 @@ int main() {
             if(event.type == SDL_QUIT)
                 gameRunning = 0;
             if(event.type == SDL_KEYDOWN)
-                Player_move(&player, event.key.keysym.sym, 1, timeDelta);
+                Player_move(&player, &bg, event.key.keysym.sym, 1, timeDelta);
             if(event.type == SDL_KEYUP)
-                Player_move(&player, event.key.keysym.sym, 0, timeDelta);
+                Player_move(&player, &bg, event.key.keysym.sym, 0, timeDelta);
         }
 
         SDL_RenderClear(ren);
