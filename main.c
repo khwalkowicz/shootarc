@@ -65,6 +65,8 @@ int main() {
         SDL_RenderClear(ren);
 
         Background_render(bg, ren);
+        Background_scroll(&bg, ren, timeDelta);
+
         Rect_render(player, ren);
 
         SDL_RenderPresent(ren);

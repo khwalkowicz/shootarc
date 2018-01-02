@@ -30,29 +30,55 @@ void Rect_destroy(Rect obj) {
 }
 
 Background Background_init(SDL_Renderer* ren) {
-    char* bg_path = "sky/";
-    uint tile_h = 180;
-    uint tile_w = 120;
-    uint assets_available = 24;
-    uint tiles_y = ceil(SCREEN_HEIGHT / tile_h);
-    uint tiles_x = ceil(SCREEN_WIDTH / tile_w);
     Background obj;
-    obj.size = tiles_x * tiles_y;
+    obj.move = 0.0;
+    obj.path = "sky/";
+    obj.tile_h = 180;
+    obj.tile_w = 120;
+    obj.assets_available = 24;
+    obj.tiles_y = ceil(SCREEN_HEIGHT / obj.tile_h);
+    obj.tiles_x = ceil(SCREEN_WIDTH / obj.tile_w);
+    obj.size = obj.tiles_x * obj.tiles_y;
     obj.array = malloc(obj.size * sizeof(Rect));
-    for(uint h_i = 0; h_i < tiles_y; h_i++)
-        for(uint w_i = 0; w_i < tiles_x; w_i++) {
+    for(uint h_i = 0; h_i < obj.tiles_y; h_i++)
+        for(uint w_i = 0; w_i < obj.tiles_x; w_i++) {
             Rect tile;
-            tile.h = tile_h;
-            tile.w = tile_w;
+            tile.h = obj.tile_h;
+            tile.w = obj.tile_w;
             tile.super.x = w_i * tile.w;
             tile.super.y = h_i * tile.h;
-            int id = rand() % assets_available + 1;
-            char* path = malloc(strlen(bg_path) + 2 + 4);
-            sprintf(path, "%s%d.png", bg_path, id);
+            int id = rand() % obj.assets_available + 1;
+            char* path = malloc(strlen(obj.path) + 2 + 4);
+            sprintf(path, "%s%d.png", obj.path, id);
             tile.tex = loadTexture(ren, path);
-            obj.array[h_i * tiles_x + w_i] = tile;
+            obj.array[h_i * obj.tiles_x + w_i] = tile;
         }
     return obj;
+}
+
+void Background_scroll(Background* obj, SDL_Renderer* ren, float timeDelta) {
+    obj->move += timeDelta;
+    if(obj->move >= 1.0) {
+        obj->move = 0.0;
+        for (uint h_i = 0; h_i < obj->tiles_y; h_i++) {
+            SDL_DestroyTexture(obj->array[h_i * obj->tiles_x].tex);
+            for (uint w_i = 0; w_i < obj->tiles_x - 1; w_i++) {
+                obj->array[h_i * obj->tiles_x + w_i] = obj->array[h_i * obj->tiles_x + w_i + 1];
+                obj->array[h_i * obj->tiles_x + w_i].super.x = w_i * obj->array[h_i * obj->tiles_x + w_i].w;
+                obj->array[h_i * obj->tiles_x + w_i].super.y = h_i * obj->array[h_i * obj->tiles_x + w_i].h;
+            }
+            Rect tile;
+            tile.h = obj->tile_h;
+            tile.w = obj->tile_w;
+            tile.super.x = (obj->tiles_x - 1) * tile.w;
+            tile.super.y = h_i * tile.h;
+            int id = rand() % obj->assets_available + 1;
+            char *path = malloc(strlen(obj->path) + 2 + 4);
+            sprintf(path, "%s%d.png", obj->path, id);
+            tile.tex = loadTexture(ren, path);
+            obj->array[h_i * obj->tiles_x + (obj->tiles_x - 1)] = tile;
+        }
+    }
 }
 
 void Background_render(Background obj, SDL_Renderer* ren) {

@@ -21,6 +21,13 @@ typedef struct Rect {
 
 typedef struct Background {
     uint size;
+    uint tile_h;
+    uint tile_w;
+    uint assets_available;
+    uint tiles_y;
+    uint tiles_x;
+    char* path;
+    double move;
     Rect* array;
 } Background;
 
@@ -29,6 +36,7 @@ void Rect_render(Rect obj, SDL_Renderer* ren);
 void Rect_destroy(Rect obj);
 
 Background Background_init(SDL_Renderer* ren);
+void Background_scroll(Background* obj, SDL_Renderer* ren, float timeDelta);
 void Background_render(Background obj, SDL_Renderer* ren);
 void Background_destroy(Background obj);
 
