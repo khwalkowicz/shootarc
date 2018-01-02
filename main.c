@@ -57,6 +57,8 @@ int main() {
         timeDelta = (float)(timeCurr - timePrev) / 100;
         timePrev = timeCurr;
 
+        showFPSinTitle(win, timeDelta);
+
         if(SDL_PollEvent(&event)) {
             if(event.type == SDL_QUIT)
                 gameRunning = 0;

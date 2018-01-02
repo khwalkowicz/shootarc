@@ -22,6 +22,13 @@ void SDLError_log(FILE* stream, char* msg) {
     fprintf(stream, "%s Error: %s\n", msg, SDL_GetError());
 }
 
+void showFPSinTitle(SDL_Window* win, float timeDelta) {
+    uint fps = round(10 / timeDelta);
+    char* str = malloc(strlen(WINDOW_TITLE) + 14);
+    sprintf(str, "%s - FPS: %u", WINDOW_TITLE, fps);
+    SDL_SetWindowTitle(win, str);
+}
+
 SDL_Texture* loadTexture(SDL_Renderer* ren, char* str) {
     char* path = getAssetPath(str);
     SDL_Texture* texture = IMG_LoadTexture(ren, path);

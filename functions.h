@@ -13,6 +13,8 @@ char* getAssetPath(char* str);
 
 void SDLError_log(FILE* stream, char* msg);
 
+void showFPSinTitle(SDL_Window* win, float timeDelta);
+
 SDL_Texture* loadTexture(SDL_Renderer* ren, char* str);
 
 void renderTexture(SDL_Texture* tex, SDL_Renderer* ren, uint x, uint y);
