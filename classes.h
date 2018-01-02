@@ -19,6 +19,14 @@ typedef struct Rect {
     SDL_Texture* tex;
 } Rect;
 
+typedef struct Player {
+    Rect super;
+    double acc; //acceleration
+    SDL_Texture* tex_up;
+    SDL_Texture* tex_norm;
+    SDL_Texture* tex_down;
+} Player;
+
 typedef struct Background {
     uint size;
     uint tile_h;
@@ -31,9 +39,12 @@ typedef struct Background {
     Rect* array;
 } Background;
 
-Rect Rect_initPlayer(SDL_Renderer* ren);
 void Rect_render(Rect obj, SDL_Renderer* ren);
 void Rect_destroy(Rect obj);
+
+Player Player_init(SDL_Renderer* ren);
+void Player_move(Player *player, SDL_Keycode key, uint keyDown, double timeDelta);
+void Player_destroy(Player obj);
 
 Background Background_init(SDL_Renderer* ren);
 void Background_scroll(Background* obj, SDL_Renderer* ren, float timeDelta);

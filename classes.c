@@ -6,16 +6,6 @@
 #include "config.h"
 #include "functions.h"
 
-Rect Rect_initPlayer(SDL_Renderer* ren) {
-    Rect player;
-    player.w = 50;
-    player.h = 75;
-    player.super.x = 25;
-    player.super.y = SCREEN_HEIGHT / 2 - player.h / 2;
-    player.tex = loadTexture(ren, "player.png");
-    return player;
-}
-
 void Rect_render(Rect obj, SDL_Renderer* ren) {
     SDL_Rect dest;
     dest.x = obj.super.x;
@@ -27,6 +17,42 @@ void Rect_render(Rect obj, SDL_Renderer* ren) {
 
 void Rect_destroy(Rect obj) {
     SDL_DestroyTexture(obj.tex);
+}
+
+Player Player_init(SDL_Renderer* ren) {
+    Player player;
+    player.super.w = 75;
+    player.super.h = 75;
+    player.super.super.x = 25;
+    player.super.super.y = SCREEN_HEIGHT / 2 - player.super.h / 2;
+    player.acc = 100.0;
+    player.tex_up = loadTexture(ren, "player_up.png");
+    player.tex_norm = loadTexture(ren, "player.png");
+    player.tex_down = loadTexture(ren, "player_down.png");
+    player.super.tex = player.tex_norm;
+    return player;
+}
+
+void Player_move(Player *player, SDL_Keycode key, uint keyDown, double timeDelta) {
+    if(keyDown) {
+        if(key == SDLK_UP || key == SDLK_w) {
+            player->super.super.y -= player->acc * timeDelta * timeDelta;
+            player->super.tex = player->tex_up;
+        }
+        if(key == SDLK_DOWN || key == SDLK_s) {
+            player->super.super.y += player->acc * timeDelta * timeDelta;
+            player->super.tex = player->tex_down;
+        }
+    } else {
+        if(key == SDLK_UP || key == SDLK_w || key == SDLK_DOWN || key == SDLK_s)
+            player->super.tex = player->tex_norm;
+    }
+}
+
+void Player_destroy(Player obj) {
+    SDL_DestroyTexture(obj.tex_up);
+    SDL_DestroyTexture(obj.tex_down);
+    SDL_DestroyTexture(obj.tex_norm);
 }
 
 Background Background_init(SDL_Renderer* ren) {
@@ -58,7 +84,7 @@ Background Background_init(SDL_Renderer* ren) {
 
 void Background_scroll(Background* obj, SDL_Renderer* ren, float timeDelta) {
     obj->move += timeDelta;
-    if(obj->move >= 1.0) {
+    if(obj->move >= 10.0) {
         obj->move = 0.0;
         for (uint h_i = 0; h_i < obj->tiles_y; h_i++) {
             SDL_DestroyTexture(obj->array[h_i * obj->tiles_x].tex);

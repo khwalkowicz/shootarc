@@ -43,7 +43,7 @@ int main() {
     }
     SDL_SetRenderDrawColor(ren, 9, 0, 22, 1);
 
-    Rect player = Rect_initPlayer(ren);
+    Player player = Player_init(ren);
     Background bg = Background_init(ren);
 
     float timeDelta = 0.0;
@@ -54,12 +54,16 @@ int main() {
     int gameRunning = 1;
     while(gameRunning) {
         timeCurr = SDL_GetTicks();
-        timeDelta = (float)(timeCurr - timePrev) / 1000;
+        timeDelta = (float)(timeCurr - timePrev) / 100;
         timePrev = timeCurr;
 
         if(SDL_PollEvent(&event)) {
             if(event.type == SDL_QUIT)
                 gameRunning = 0;
+            if(event.type == SDL_KEYDOWN)
+                Player_move(&player, event.key.keysym.sym, 1, timeDelta);
+            if(event.type == SDL_KEYUP)
+                Player_move(&player, event.key.keysym.sym, 0, timeDelta);
         }
 
         SDL_RenderClear(ren);
@@ -67,12 +71,12 @@ int main() {
         Background_render(bg, ren);
         Background_scroll(&bg, ren, timeDelta);
 
-        Rect_render(player, ren);
+        Rect_render(player.super, ren);
 
         SDL_RenderPresent(ren);
     }
 
-    Rect_destroy(player);
+    Player_destroy(player);
     Background_destroy(bg);
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
