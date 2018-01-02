@@ -39,17 +39,3 @@ void renderTexture(SDL_Texture* tex, SDL_Renderer* ren, uint x, uint y) {
     SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
     SDL_RenderCopy(ren, tex, NULL, &dest);
 }
-
-void Win_renderBackground(SDL_Renderer* ren) {
-    char* bg_path = "sky/";
-    for(uint h_i = 0; h_i < ceil(SCREEN_HEIGHT / 180); h_i++)
-        for(uint w_i = 0; w_i < ceil(SCREEN_WIDTH / 120); w_i++) {
-            uint y = h_i * 180;
-            uint x = w_i * 120;
-            int id = rand() % 24 + 1;
-            char* path = malloc(strlen(bg_path) + 2 + 4);
-            sprintf(path, "%s%d.png", bg_path, id);
-            SDL_Texture* img = loadTexture(ren, path);
-            renderTexture(img, ren, x, y);
-        }
-}

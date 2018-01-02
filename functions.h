@@ -17,6 +17,4 @@ SDL_Texture* loadTexture(SDL_Renderer* ren, char* str);
 
 void renderTexture(SDL_Texture* tex, SDL_Renderer* ren, uint x, uint y);
 
-void Win_renderBackground(SDL_Renderer* ren);
-
 #endif //GAME_FUNCTIONS_H

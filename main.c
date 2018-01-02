@@ -44,6 +44,7 @@ int main() {
     SDL_SetRenderDrawColor(ren, 9, 0, 22, 1);
 
     Rect player = Rect_initPlayer(ren);
+    Background bg = Background_init(ren);
 
     float timeDelta = 0.0;
     uint  timeCurr = 0;
@@ -63,13 +64,14 @@ int main() {
 
         SDL_RenderClear(ren);
 
-        Win_renderBackground(ren);
+        Background_render(bg, ren);
         Rect_render(player, ren);
 
         SDL_RenderPresent(ren);
     }
 
     Rect_destroy(player);
+    Background_destroy(bg);
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     IMG_Quit();
