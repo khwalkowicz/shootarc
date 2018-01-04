@@ -3,19 +3,21 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "config.h"
-#include "functions.h"
-#include "classes.h"
+#include "window.h"
 
 int main() {
 
-    srand(time(NULL));
+    srand((uint)time(NULL));
+
+
+    /* SDL INITS */
 
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
         SDLError_log(stdout, "SDL_Init");
         return 1;
     }
 
-    if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG){
+    if((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
         SDLError_log(stdout, "IMG_Init");
         SDL_Quit();
         return 1;
@@ -43,47 +45,75 @@ int main() {
     }
     SDL_SetRenderDrawColor(ren, 9, 0, 22, 1);
 
-    Player player = Player_init(ren);
-    Background bg = Background_init(ren);
 
-    float timeDelta = 0.0;
+    /* OBJECT INITS */
+
+    float win_velocity_goal = WIN_VELOCITY;
+
+    Player player;
+    Player_ctor(&player, ren);
+
+    Background bg0;
+    Background_ctor(&bg0, 0, ren);
+    Background bg1;
+    Background_ctor(&bg1, 1, ren);
+
+
+    /* GET TIME DELTA */
+    float td;
     uint  timeCurr = 0;
     uint  timePrev = 0;
+
+
+    /* MAIN LOOP */
 
     SDL_Event event;
     int gameRunning = 1;
     while(gameRunning) {
         timeCurr = SDL_GetTicks();
-        timeDelta = (float)(timeCurr - timePrev) / 100;
+        td = (float)(timeCurr - timePrev) / 100;
         timePrev = timeCurr;
 
-        showFPSinTitle(win, timeDelta);
+        showFPSinTitle(win, td);
 
         if(SDL_PollEvent(&event)) {
             if(event.type == SDL_QUIT)
                 gameRunning = 0;
             if(event.type == SDL_KEYDOWN)
-                Win_controls(&player, &bg, event.key.keysym.sym, 1);
+                Win_controls(&win_velocity_goal, &player, event.key.keysym.sym, 1);
             if(event.type == SDL_KEYUP)
-                Win_controls(&player, &bg, event.key.keysym.sym, 0);
+                Win_controls(&win_velocity_goal, &player, event.key.keysym.sym, 0);
         }
 
         SDL_RenderClear(ren);
 
-        Background_render(bg, ren);
-        Background_scroll(&bg, ren, timeDelta);
+        Background_render(&bg0, ren);
+        Background_update(&bg0, win_velocity_goal, td, ren);
+        Background_render(&bg1, ren);
+        Background_update(&bg1, win_velocity_goal, td, ren);
 
-        Rect_render(player.super, ren);
-        Player_update(&player, timeDelta);
+        MRect_render((MRect*)&player, ren);
+        MShape_update((MShape*)&player, td);
+
+        printf("player: x=%f, y=%f vel_x=%f vel_y=%f\n",
+               player.super.super.super.x, player.super.super.super.y,
+               player.super.super.velocity.x, player.super.super.super.y
+        );
 
         SDL_RenderPresent(ren);
     }
 
-    Player_destroy(player);
-    Background_destroy(bg);
+
+    /* DESTROY TEXTURES AND KILL SDL */
+
+    Player_destroy(&player);
+    Background_destroy(&bg0);
+    Background_destroy(&bg1);
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     IMG_Quit();
     SDL_Quit();
+
+
     return 0;
 }

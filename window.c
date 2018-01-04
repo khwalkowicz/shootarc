@@ -4,7 +4,7 @@
 
 #include <SDL2/SDL_image.h>
 #include <unistd.h>
-#include "functions.h"
+#include "window.h"
 #include "config.h"
 
 char* getAssetPath(char* str) {
@@ -23,7 +23,7 @@ void SDLError_log(FILE* stream, char* msg) {
 }
 
 void showFPSinTitle(SDL_Window* win, float timeDelta) {
-    uint fps = round(10 / timeDelta);
+    uint fps = (uint)round(10 / timeDelta);
     char* str = malloc(strlen(WINDOW_TITLE) + 14);
     sprintf(str, "%s - FPS: %u", WINDOW_TITLE, fps);
     SDL_SetWindowTitle(win, str);
@@ -47,13 +47,25 @@ void renderTexture(SDL_Texture* tex, SDL_Renderer* ren, uint x, uint y) {
     SDL_RenderCopy(ren, tex, NULL, &dest);
 }
 
-double approach(double goal, double curr, double deltaTime) {
-    double diff = goal - curr;
-    if(diff > deltaTime) {
-        return curr + deltaTime;
+float approach(float goal, float curr, double dt) {
+    float diff = goal - curr;
+    if(diff > dt) {
+        return curr + (float)dt;
     }
-    if(diff < -deltaTime) {
-        return curr - deltaTime;
+    if(diff < - dt) {
+        return curr - (float)dt;
     }
     return goal;
+}
+
+void Win_controls(float* win_velocity_goal, Player* player,
+                  SDL_Keycode key, uint keyDown) {
+    if(key == SDLK_UP || key == SDLK_DOWN || key == SDLK_w || key == SDLK_s)
+        Player_controls(player, key, keyDown);
+    if(key == SDLK_RIGHT || key == SDLK_d) {
+        if(keyDown)
+            *win_velocity_goal = WIN_VELOCITY_GOAL;
+        else
+            *win_velocity_goal = WIN_VELOCITY;
+    }
 }
