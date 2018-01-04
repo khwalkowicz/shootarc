@@ -17,18 +17,27 @@ void Vector_ctor(Vector* self, float x, float y) {
     self->y = y;
 }
 
+void Movable_ctor(Movable* self, float velX, float velY,
+                  float velGoalX, float velGoalY) {
+    Vector_ctor(&self->velocity, velX, velY);
+    Vector_ctor(&self->velocityGoal, velGoalX, velGoalY);
+}
+
+void Movable_update(Movable* self, float td) {
+    self->velocity.x = approach(self->velocityGoal.x, self->velocity.x, td * 50);
+    self->velocity.y = approach(self->velocityGoal.y, self->velocity.y, td * 50);
+}
 
 void MShape_ctor(MShape* self, float x, float y) {
     Shape_ctor(&self->super, x, y);
-    Vector_ctor(&self->velocity, 0.0, 0.0);
-    Vector_ctor(&self->velocityGoal, 0.0, 0.0);
+    Movable_ctor(&self->vectors, 0, 0, 0, 0);
 }
 
 void MShape_update(MShape* self, float td) {
-    self->velocity.x = approach(self->velocityGoal.x, self->velocity.x, td * 50);
-    self->velocity.y = approach(self->velocityGoal.y, self->velocity.y, td * 50);
-    self->super.x += self->velocity.x * td;
-    self->super.y += self->velocity.y * td;
+    Movable_update(&self->vectors, td);
+
+    self->super.x += self->vectors.velocity.x * td;
+    self->super.y += self->vectors.velocity.y * td;
 }
 
 
@@ -57,24 +66,15 @@ void Rect_destroy(Rect* self) {
 
 void MRect_ctor(MRect* self, float x, float y,
                 float width, float height, SDL_Texture* tex) {
-    MShape_ctor(&self->super, x, y);
-
-    self->height = height;
-    self->width  = width;
-    self->tex    = tex;
+    Rect_ctor(&self->super, x, y, width, height, tex);
+    Movable_ctor(&self->vectors, 0, 0, 0, 0);
 }
 
-void MRect_render(MRect* self, SDL_Renderer* ren) {
-    SDL_Rect dest;
-    dest.x = (int)self->super.super.x;
-    dest.y = (int)self->super.super.y;
-    dest.w = (int)self->width;
-    dest.h = (int)self->height;
-    SDL_RenderCopy(ren, self->tex, NULL, &dest);
-}
+void MRect_update(MRect* self, float td) {
+    Movable_update(&self->vectors, td);
 
-void MRect_destroy(MRect* self) {
-    SDL_DestroyTexture(self->tex);
+    self->super.super.x += self->vectors.velocity.x * td;
+    self->super.super.y += self->vectors.velocity.y * td;
 }
 
 
@@ -92,18 +92,18 @@ void Player_ctor(Player* self, SDL_Renderer* ren) {
 void Player_controls(Player* self, SDL_Keycode key, uint keyDown) {
     if(keyDown) {
         if(key == SDLK_UP || key == SDLK_w) {
-            self->super.super.velocityGoal.y = -1 * PLAYER_VELOCITY_GOAL;
-            self->super.tex = self->texUp;
+            self->super.vectors.velocityGoal.y = -1 * PLAYER_VELOCITY_GOAL;
+            self->super.super.tex = self->texUp;
         }
         if(key == SDLK_DOWN || key == SDLK_s) {
-            self->super.super.velocityGoal.y = PLAYER_VELOCITY_GOAL;
-            self->super.tex = self->texDown;
+            self->super.vectors.velocityGoal.y = PLAYER_VELOCITY_GOAL;
+            self->super.super.tex = self->texDown;
         }
     } else {
         if(key == SDLK_UP || key == SDLK_w ||
            key == SDLK_DOWN || key == SDLK_s) {
-            self->super.super.velocityGoal.y = 0;
-            self->super.tex = self->texNorm;
+            self->super.vectors.velocityGoal.y = 0;
+            self->super.super.tex = self->texNorm;
         }
     }
 }
@@ -119,11 +119,11 @@ void Background_ctor(Background* self, float pos, SDL_Renderer* ren) {
     MRect_ctor(&self->super, pos * SCREEN_WIDTH, 0,
                SCREEN_WIDTH, SCREEN_HEIGHT, NULL);
 
-    self->super.super.velocity.x = WIN_VELOCITY;
-    self->super.super.velocityGoal.x = WIN_VELOCITY;
+    self->super.vectors.velocity.x = WIN_VELOCITY;
+    self->super.vectors.velocityGoal.x = WIN_VELOCITY;
 
-    self->tiles_x = (uint)ceil((double)self->super.width / BG_TILE_W);
-    self->tiles_y = (uint)ceil((double)self->super.height / BG_TILE_H);
+    self->tiles_x = (uint)ceil((double)self->super.super.width / BG_TILE_W);
+    self->tiles_y = (uint)ceil((double)self->super.super.height / BG_TILE_H);
     self->size = self->tiles_x * self->tiles_y;
     self->array = malloc(self->size * sizeof(Rect));
 
@@ -153,12 +153,12 @@ void Background_render(Background* self, SDL_Renderer* ren) {
 
 void Background_update(Background* self, float win_velocity_goal,
                        float td, SDL_Renderer* ren) {
-    if(self->super.super.super.x - self->super.super.velocity.x * td +
+    if(self->super.super.super.x - self->super.vectors.velocity.x * td +
        SCREEN_WIDTH <= 0)
         Background_ctor(self, 1, ren);
 
-    self->super.super.velocityGoal.x = win_velocity_goal;
-    MShape_update((MShape*)self, td);
+    self->super.vectors.velocityGoal.x = win_velocity_goal;
+    MRect_update((MRect*)self, td);
 
     for(uint h_i = 0; h_i < self->tiles_y; h_i++)
         for(uint w_i = 0; w_i < self->tiles_x; w_i++)

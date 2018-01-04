@@ -92,13 +92,8 @@ int main() {
         Background_render(&bg1, ren);
         Background_update(&bg1, win_velocity_goal, td, ren);
 
-        MRect_render((MRect*)&player, ren);
-        MShape_update((MShape*)&player, td);
-
-        printf("player: x=%f, y=%f vel_x=%f vel_y=%f\n",
-               player.super.super.super.x, player.super.super.super.y,
-               player.super.super.velocity.x, player.super.super.super.y
-        );
+        Rect_render((Rect*)&player, ren);
+        MRect_update((MRect*)&player, td); // !!!!
 
         SDL_RenderPresent(ren);
     }

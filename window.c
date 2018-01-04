@@ -23,7 +23,7 @@ void SDLError_log(FILE* stream, char* msg) {
 }
 
 void showFPSinTitle(SDL_Window* win, float timeDelta) {
-    uint fps = (uint)round(10 / timeDelta);
+    uint fps = (uint)round(10 / (double)timeDelta);
     char* str = malloc(strlen(WINDOW_TITLE) + 14);
     sprintf(str, "%s - FPS: %u", WINDOW_TITLE, fps);
     SDL_SetWindowTitle(win, str);
