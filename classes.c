@@ -59,6 +59,18 @@ void Rect_render(Rect* self, SDL_Renderer* ren) {
     SDL_RenderCopy(ren, self->tex, NULL, &dest);
 }
 
+uint Rect_checkWallsX(Rect* self) {
+    if(self->super.x <= 0 || self->super.x + self->width >= SCREEN_WIDTH)
+        return 1;
+    return 0;
+}
+
+uint Rect_checkWallsY(Rect* self) {
+    if(self->super.y <= 0 || self->super.y + self->height >= SCREEN_HEIGHT)
+        return 1;
+    return 0;
+}
+
 void Rect_destroy(Rect* self) {
     SDL_DestroyTexture(self->tex);
 }
@@ -70,11 +82,21 @@ void MRect_ctor(MRect* self, float x, float y,
     Movable_ctor(&self->vectors, 0, 0, 0, 0);
 }
 
-void MRect_update(MRect* self, float td) {
+void MRect_update(MRect* self, float td, uint checkCollision) {
     Movable_update(&self->vectors, td);
+
+    float prevX = self->super.super.x;
+    float prevY = self->super.super.y;
 
     self->super.super.x += self->vectors.velocity.x * td;
     self->super.super.y += self->vectors.velocity.y * td;
+
+    if(checkCollision) {
+        if(Rect_checkWallsX((Rect*)self))
+            self->super.super.x = prevX;
+        if(Rect_checkWallsY((Rect*)self))
+            self->super.super.y = prevY;
+    }
 }
 
 
@@ -99,11 +121,21 @@ void Player_controls(Player* self, SDL_Keycode key, uint keyDown) {
             self->super.vectors.velocityGoal.y = PLAYER_VELOCITY_GOAL;
             self->super.super.tex = self->texDown;
         }
+        if(key == SDLK_LEFT || key == SDLK_a) {
+            self->super.vectors.velocityGoal.x = -1 * PLAYER_VELOCITY_GOAL;
+        }
+        if(key == SDLK_RIGHT || key == SDLK_d) {
+            self->super.vectors.velocityGoal.x = PLAYER_VELOCITY_GOAL;
+        }
     } else {
         if(key == SDLK_UP || key == SDLK_w ||
            key == SDLK_DOWN || key == SDLK_s) {
             self->super.vectors.velocityGoal.y = 0;
             self->super.super.tex = self->texNorm;
+        }
+        if(key == SDLK_LEFT || key == SDLK_a ||
+           key == SDLK_RIGHT || key == SDLK_d) {
+            self->super.vectors.velocityGoal.x = 0;
         }
     }
 }
@@ -158,7 +190,7 @@ void Background_update(Background* self, float win_velocity_goal,
         Background_ctor(self, 1, ren);
 
     self->super.vectors.velocityGoal.x = win_velocity_goal;
-    MRect_update((MRect*)self, td);
+    MRect_update((MRect*)self, td, 0);
 
     for(uint h_i = 0; h_i < self->tiles_y; h_i++)
         for(uint w_i = 0; w_i < self->tiles_x; w_i++)
@@ -170,4 +202,45 @@ void Background_destroy(Background* self) {
     for(uint h_i = 0; h_i < self->tiles_y; h_i++)
         for(uint w_i = 0; w_i < self->tiles_x; w_i++)
             Rect_destroy(&self->array[h_i * self->tiles_x + w_i]);
+}
+
+void Foreground_ctor(Foreground* self) {
+    self->size = 1;
+    self->idx  = 0;
+    self->arr  = malloc(self->size * sizeof(Rect*));
+}
+
+uint Foreground_add(Foreground* self, Rect* rectPtr) {
+    if(self->idx + 1 >= self->size) {
+        self->size *= 2;
+        Rect** temp = realloc(self->arr, self->size * sizeof(Rect*));
+        if(temp != NULL)
+            self->arr = temp;
+        else {
+            free(self->arr);
+            printf("\nMemory alloc problem! Aborting!\n");
+            return 1;
+        }
+    }
+    self->arr[self->idx] = rectPtr;
+    self->idx++;
+    return 0;
+}
+
+void Foreground_del(Foreground* self, Rect* rectPtr) {
+    uint i = 0;
+    for(; i < self->idx; i++)
+        if(self->arr[i] == rectPtr)
+            break;
+    if(i == self->idx + 1)
+        printf("\nForeground_del: requested Rect not in Foreground.\n");
+    else {
+        for(; i < self->idx - 1; i++)
+            self->arr[i] = self->arr[i + 1];
+        self->idx--;
+    }
+}
+
+void Foreground_destroy(Foreground* self) {
+    free(self->arr);
 }

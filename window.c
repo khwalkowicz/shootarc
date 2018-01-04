@@ -60,9 +60,10 @@ float approach(float goal, float curr, double dt) {
 
 void Win_controls(float* win_velocity_goal, Player* player,
                   SDL_Keycode key, uint keyDown) {
-    if(key == SDLK_UP || key == SDLK_DOWN || key == SDLK_w || key == SDLK_s)
+    if(key == SDLK_UP || key == SDLK_DOWN || key == SDLK_w || key == SDLK_s ||
+       key == SDLK_LEFT || key == SDLK_RIGHT || key == SDLK_a || key == SDLK_d)
         Player_controls(player, key, keyDown);
-    if(key == SDLK_RIGHT || key == SDLK_d) {
+    if(key == SDLK_z || key == SDLK_COMMA) {
         if(keyDown)
             *win_velocity_goal = WIN_VELOCITY_GOAL;
         else

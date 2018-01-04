@@ -52,6 +52,8 @@ typedef struct Rect {
 void Rect_ctor(Rect* self, float x, float y,
                 float width, float height, SDL_Texture* tex);
 void Rect_render(Rect* self, SDL_Renderer* ren);
+uint Rect_checkWallsX(Rect* self);
+uint Rect_checkWallsY(Rect* self);
 void Rect_destroy(Rect* self);
 
 
@@ -62,7 +64,7 @@ typedef struct MRect {
 
 void MRect_ctor(MRect* self, float x, float y,
                 float width, float height, SDL_Texture* tex);
-void MRect_update(MRect* self, float td);
+void MRect_update(MRect* self, float td, uint checkCollision);
 
 
 typedef struct Player {
@@ -79,9 +81,9 @@ void Player_destroy(Player* self);
 
 typedef struct Background {
     MRect super;
-    uint tiles_x;
-    uint tiles_y;
-    uint size;
+    uint  tiles_x;
+    uint  tiles_y;
+    uint  size;
     Rect* array;
 } Background;
 
@@ -92,11 +94,16 @@ void Background_update(Background* self, float win_velocity_goal,
 void Background_destroy(Background* self);
 
 /* Foreground contains a list of pointers on all Rect's
- * visible in the window's foreground
+ * visible in the window's foreground*/
 typedef struct Foreground {
     uint size;
     uint idx;
+    Rect** arr;
+} Foreground;
 
-};*/
+void Foreground_ctor(Foreground* self);
+uint Foreground_add(Foreground* self, Rect* rectPtr);
+void Foreground_del(Foreground* self, Rect* rectPtr);
+void Foreground_destroy(Foreground* self);
 
 #endif //ARCSHOOT_CLASSES_H

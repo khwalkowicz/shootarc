@@ -50,8 +50,12 @@ int main() {
 
     float win_velocity_goal = WIN_VELOCITY;
 
+    Foreground fg;
+    Foreground_ctor(&fg);
+
     Player player;
     Player_ctor(&player, ren);
+    Foreground_add(&fg, (Rect*)&player);
 
     Background bg0;
     Background_ctor(&bg0, 0, ren);
@@ -93,17 +97,19 @@ int main() {
         Background_update(&bg1, win_velocity_goal, td, ren);
 
         Rect_render((Rect*)&player, ren);
-        MRect_update((MRect*)&player, td); // !!!!
+        MRect_update((MRect*)&player, td, 1);
 
         SDL_RenderPresent(ren);
     }
 
 
-    /* DESTROY TEXTURES AND KILL SDL */
+    /* DESTROY MALLOCS, TEXTURES AND SDL */
 
     Player_destroy(&player);
+    Foreground_destroy(&fg);
     Background_destroy(&bg0);
     Background_destroy(&bg1);
+
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     IMG_Quit();
