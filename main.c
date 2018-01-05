@@ -53,14 +53,30 @@ int main() {
     Foreground fg;
     Foreground_ctor(&fg);
 
-    Player player;
-    Player_ctor(&player, ren);
-    Foreground_add(&fg, (Rect*)&player);
-
     Background bg0;
     Background_ctor(&bg0, 0, ren);
     Background bg1;
     Background_ctor(&bg1, 1, ren);
+
+    Player player;
+    Player_ctor(&player, ren);
+    Foreground_add(&fg, (Rect*)&player);
+
+    Rect enemy1;
+    Rect_ctor(&enemy1, 550, 213, 59, 64, loadTexture(ren, "enemies/black1.png"));
+    Foreground_add(&fg, &enemy1);
+
+    Rect enemy2;
+    Rect_ctor(&enemy2, 700, 25, 59, 64, loadTexture(ren, "enemies/black1.png"));
+    Foreground_add(&fg, &enemy2);
+
+    Rect enemy3;
+    Rect_ctor(&enemy3, 800, 420, 59, 64, loadTexture(ren, "enemies/black1.png"));
+    Foreground_add(&fg, &enemy3);
+
+    Rect enemy4;
+    Rect_ctor(&enemy4, 600, 300, 59, 64, loadTexture(ren, "enemies/black1.png"));
+    Foreground_add(&fg, &enemy4);
 
 
     /* GET TIME DELTA */
@@ -99,12 +115,21 @@ int main() {
         Rect_render((Rect*)&player, ren);
         MRect_update((MRect*)&player, td, 1);
 
+        Rect_render(&enemy1, ren);
+        Rect_render(&enemy2, ren);
+        Rect_render(&enemy3, ren);
+        Rect_render(&enemy4, ren);
+
         SDL_RenderPresent(ren);
     }
 
 
     /* DESTROY MALLOCS, TEXTURES AND SDL */
 
+    Rect_destroy(&enemy1);
+    Rect_destroy(&enemy2);
+    Rect_destroy(&enemy3);
+    Rect_destroy(&enemy4);
     Player_destroy(&player);
     Foreground_destroy(&fg);
     Background_destroy(&bg0);

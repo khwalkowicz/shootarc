@@ -57,6 +57,19 @@ uint Rect_checkWallsY(Rect* self);
 void Rect_destroy(Rect* self);
 
 
+typedef struct RectArr {
+    uint size;
+    uint idx;
+    Rect** arr;
+} RectArr;
+
+void RectArr_ctor(RectArr* self);
+uint RectArr_add(RectArr* self, Rect* rectPtr);
+void RectArr_sort(RectArr* self, char towards);
+void RectArr_del(RectArr* self, Rect* rectPtr);
+void RectArr_destroy(RectArr* self);
+
+
 typedef struct MRect {
     Rect super;
     Movable vectors;
@@ -93,12 +106,12 @@ void Background_update(Background* self, float win_velocity_goal,
                        float td, SDL_Renderer* ren);
 void Background_destroy(Background* self);
 
-/* Foreground contains a list of pointers on all Rect's
- * visible in the window's foreground*/
+
+/* Foreground stores all Rects rendered in the window's foreground.
+ * It is used for collision detection. */
 typedef struct Foreground {
-    uint size;
-    uint idx;
-    Rect** arr;
+    RectArr sortX;
+    RectArr flagged;
 } Foreground;
 
 void Foreground_ctor(Foreground* self);

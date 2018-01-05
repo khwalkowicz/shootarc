@@ -76,6 +76,74 @@ void Rect_destroy(Rect* self) {
 }
 
 
+void RectArr_ctor(RectArr* self) {
+    self->size = 1;
+    self->idx  = 0;
+    self->arr  = malloc(self->size * sizeof(Rect*));
+}
+
+uint RectArr_add(RectArr* self, Rect* rectPtr) {
+    if(self->idx + 1 >= self->size) {
+        self->size *= 2;
+
+        Rect** temp = realloc(self->arr, self->size * sizeof(Rect*));
+        if(temp != NULL)
+            self->arr = temp;
+        else {
+            free(self->arr);
+            printf("\nMemory alloc problem! Aborting!\n");
+            return 1;
+        }
+    }
+
+    self->arr[self->idx] = rectPtr;
+    self->idx++;
+
+    return 0;
+}
+
+void RectArr_del(RectArr* self, Rect* rectPtr) {
+    uint i = 0;
+    for(; i < self->idx; i++)
+        if(self->arr[i] == rectPtr)
+            break;
+    if(i != self->idx + 1) {
+        for(; i < self->idx - 1; i++)
+            self->arr[i] = self->arr[i + 1];
+        self->idx--;
+    }
+}
+
+void RectArr_sort(RectArr* self, char towards) {
+    if(towards == 'x') {
+        for(uint i = 1; i < self->idx; ++i) {
+            Rect* tmp = self->arr[i];
+            uint j = i;
+            while(j > 0 && tmp->super.x < self->arr[j - 1]->super.x) {
+                self->arr[j] = self->arr[j - 1];
+                --j;
+            }
+            self->arr[j] = tmp;
+        }
+    }
+    if(towards == 'y') {
+        for(uint i = 1; i < self->idx; ++i) {
+            Rect* tmp = self->arr[i];
+            uint j = i;
+            while(j > 0 && tmp->super.y < self->arr[j - 1]->super.y) {
+                self->arr[j] = self->arr[j - 1];
+                --j;
+            }
+            self->arr[j] = tmp;
+        }
+    }
+}
+
+void RectArr_destroy(RectArr* self) {
+    free(self->arr);
+}
+
+
 void MRect_ctor(MRect* self, float x, float y,
                 float width, float height, SDL_Texture* tex) {
     Rect_ctor(&self->super, x, y, width, height, tex);
@@ -204,43 +272,24 @@ void Background_destroy(Background* self) {
             Rect_destroy(&self->array[h_i * self->tiles_x + w_i]);
 }
 
+
 void Foreground_ctor(Foreground* self) {
-    self->size = 1;
-    self->idx  = 0;
-    self->arr  = malloc(self->size * sizeof(Rect*));
+    RectArr_ctor(&self->sortX);
+    RectArr_ctor(&self->flagged);
 }
 
-uint Foreground_add(Foreground* self, Rect* rectPtr) {
-    if(self->idx + 1 >= self->size) {
-        self->size *= 2;
-        Rect** temp = realloc(self->arr, self->size * sizeof(Rect*));
-        if(temp != NULL)
-            self->arr = temp;
-        else {
-            free(self->arr);
-            printf("\nMemory alloc problem! Aborting!\n");
-            return 1;
-        }
-    }
-    self->arr[self->idx] = rectPtr;
-    self->idx++;
-    return 0;
+uint Foreground_add(Foreground* self, Rect* obj) {
+    uint addFailed = RectArr_add(&self->sortX, obj);
+    if(!addFailed)
+        RectArr_sort(&self->sortX, 'x');
+    return addFailed;
 }
 
-void Foreground_del(Foreground* self, Rect* rectPtr) {
-    uint i = 0;
-    for(; i < self->idx; i++)
-        if(self->arr[i] == rectPtr)
-            break;
-    if(i == self->idx + 1)
-        printf("\nForeground_del: requested Rect not in Foreground.\n");
-    else {
-        for(; i < self->idx - 1; i++)
-            self->arr[i] = self->arr[i + 1];
-        self->idx--;
-    }
+void Foreground_del(Foreground* self, Rect* obj) {
+    RectArr_del(&self->sortX, obj);
 }
 
 void Foreground_destroy(Foreground* self) {
-    free(self->arr);
+    RectArr_destroy(&self->sortX);
+    RectArr_destroy(&self->flagged);
 }
