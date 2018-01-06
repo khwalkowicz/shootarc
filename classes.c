@@ -248,7 +248,7 @@ void Background_ctor(Background* self, float pos, SDL_Renderer* ren) {
     self->super.vectors.velocity.x = WIN_VELOCITY;
     self->super.vectors.velocityGoal.x = WIN_VELOCITY;
 
-    self->tiles_x = (uint)ceil((double)self->super.super.height / BG_TILE_W);
+    self->tiles_x = (uint)ceil((double)self->super.super.width / BG_TILE_W);
     self->tiles_y = (uint)ceil((double)self->super.super.height / BG_TILE_H);
     self->size = self->tiles_x * self->tiles_y;
     self->array = malloc(self->size * sizeof(Rect));
