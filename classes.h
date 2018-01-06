@@ -67,7 +67,7 @@ void RectArr_ctor(RectArr* self);
 uint RectArr_add(RectArr* self, Rect* rectPtr);
 void RectArr_sort(RectArr* self, char towards);
 void RectArr_del(RectArr* self, Rect* rectPtr);
-RectArr RectArr_checkCollision(RectArr* fg, Rect* obj);
+uint RectArr_checkCollision(RectArr* fg, Rect* obj);
 void RectArr_destroy(RectArr* self);
 
 

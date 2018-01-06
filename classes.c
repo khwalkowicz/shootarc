@@ -139,9 +139,7 @@ void RectArr_sort(RectArr* self, char towards) {
     }
 }
 
-RectArr RectArr_checkCollision(RectArr* fg, Rect* obj) {
-    RectArr flagged;
-    RectArr_ctor(&flagged);
+uint RectArr_checkCollision(RectArr* fg, Rect* obj) {
     for(uint i = 0; i < fg->idx; i++) {
         if(obj->super.x + obj->width < fg->arr[i]->super.x)
             break;
@@ -150,10 +148,10 @@ RectArr RectArr_checkCollision(RectArr* fg, Rect* obj) {
             obj->super.x <= fg->arr[i]->super.x + fg->arr[i]->width) &&
            (obj->super.y +  obj->height >= fg->arr[i]->super.y &&
             obj->super.y <= fg->arr[i]->super.y + fg->arr[i]->height)) {
-            RectArr_add(&flagged, fg->arr[i]);
+            return 1;
         }
     }
-    return flagged;
+    return 0;
 }
 
 void RectArr_destroy(RectArr* self) {
@@ -174,19 +172,21 @@ void MRect_update(MRect* self, float td, uint checkCollision, RectArr* fg) {
     float prevY = self->super.super.y;
 
     self->super.super.x += self->vectors.velocity.x * td;
+
+    if(checkCollision) {
+        if(Rect_checkWallsX((Rect*)self) ||
+           RectArr_checkCollision(fg, (Rect*)self)) {
+            self->super.super.x = prevX;
+        }
+    }
+
     self->super.super.y += self->vectors.velocity.y * td;
 
     if(checkCollision) {
-        if(Rect_checkWallsX((Rect*)self))
-            self->super.super.x = prevX;
-        if(Rect_checkWallsY((Rect*)self))
-            self->super.super.y = prevY;
-        RectArr collided = RectArr_checkCollision(fg, (Rect*)self);
-        if(collided.idx) {
-            self->super.super.x = prevX;
+        if(Rect_checkWallsY((Rect*)self) ||
+           RectArr_checkCollision(fg, (Rect*)self)) {
             self->super.super.y = prevY;
         }
-        RectArr_destroy(&collided);
     }
 
     if(fg != NULL)
