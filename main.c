@@ -50,8 +50,8 @@ int main() {
 
     float win_velocity_goal = WIN_VELOCITY;
 
-    Foreground fg;
-    Foreground_ctor(&fg);
+    RectArr fg;
+    RectArr_ctor(&fg);
 
     Background bg0;
     Background_ctor(&bg0, 0, ren);
@@ -60,23 +60,27 @@ int main() {
 
     Player player;
     Player_ctor(&player, ren);
-    Foreground_add(&fg, (Rect*)&player);
+    RectArr_add(&fg, (Rect*)&player);
 
     Rect enemy1;
     Rect_ctor(&enemy1, 550, 213, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    Foreground_add(&fg, &enemy1);
+    RectArr_add(&fg, &enemy1);
+    RectArr_sort(&fg, 'x');
 
     Rect enemy2;
     Rect_ctor(&enemy2, 700, 25, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    Foreground_add(&fg, &enemy2);
+    RectArr_add(&fg, &enemy2);
+    RectArr_sort(&fg, 'x');
 
     Rect enemy3;
     Rect_ctor(&enemy3, 800, 420, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    Foreground_add(&fg, &enemy3);
+    RectArr_add(&fg, &enemy3);
+    RectArr_sort(&fg, 'x');
 
     Rect enemy4;
     Rect_ctor(&enemy4, 600, 300, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    Foreground_add(&fg, &enemy4);
+    RectArr_add(&fg, &enemy4);
+    RectArr_sort(&fg, 'x');
 
 
     /* GET TIME DELTA */
@@ -113,7 +117,7 @@ int main() {
         Background_update(&bg1, win_velocity_goal, td, ren);
 
         Rect_render((Rect*)&player, ren);
-        MRect_update((MRect*)&player, td, 1);
+        MRect_update((MRect*)&player, td, 1, &fg);
 
         Rect_render(&enemy1, ren);
         Rect_render(&enemy2, ren);
@@ -131,7 +135,7 @@ int main() {
     Rect_destroy(&enemy3);
     Rect_destroy(&enemy4);
     Player_destroy(&player);
-    Foreground_destroy(&fg);
+    RectArr_destroy(&fg);
     Background_destroy(&bg0);
     Background_destroy(&bg1);
 

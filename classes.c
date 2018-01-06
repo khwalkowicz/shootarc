@@ -139,6 +139,23 @@ void RectArr_sort(RectArr* self, char towards) {
     }
 }
 
+RectArr RectArr_checkCollision(RectArr* fg, Rect* obj) {
+    RectArr flagged;
+    RectArr_ctor(&flagged);
+    for(uint i = 0; i < fg->idx; i++) {
+        if(obj->super.x + obj->width < fg->arr[i]->super.x)
+            break;
+        if(fg->arr[i] != obj &&
+           (obj->super.x +  obj->width >= fg->arr[i]->super.x &&
+            obj->super.x <= fg->arr[i]->super.x + fg->arr[i]->width) &&
+           (obj->super.y +  obj->height >= fg->arr[i]->super.y &&
+            obj->super.y <= fg->arr[i]->super.y + fg->arr[i]->height)) {
+            RectArr_add(&flagged, fg->arr[i]);
+        }
+    }
+    return flagged;
+}
+
 void RectArr_destroy(RectArr* self) {
     free(self->arr);
 }
@@ -150,7 +167,7 @@ void MRect_ctor(MRect* self, float x, float y,
     Movable_ctor(&self->vectors, 0, 0, 0, 0);
 }
 
-void MRect_update(MRect* self, float td, uint checkCollision) {
+void MRect_update(MRect* self, float td, uint checkCollision, RectArr* fg) {
     Movable_update(&self->vectors, td);
 
     float prevX = self->super.super.x;
@@ -164,7 +181,16 @@ void MRect_update(MRect* self, float td, uint checkCollision) {
             self->super.super.x = prevX;
         if(Rect_checkWallsY((Rect*)self))
             self->super.super.y = prevY;
+        RectArr collided = RectArr_checkCollision(fg, (Rect*)self);
+        if(collided.idx) {
+            self->super.super.x = prevX;
+            self->super.super.y = prevY;
+        }
+        RectArr_destroy(&collided);
     }
+
+    if(fg != NULL)
+        RectArr_sort(fg, 'x');
 }
 
 
@@ -222,7 +248,7 @@ void Background_ctor(Background* self, float pos, SDL_Renderer* ren) {
     self->super.vectors.velocity.x = WIN_VELOCITY;
     self->super.vectors.velocityGoal.x = WIN_VELOCITY;
 
-    self->tiles_x = (uint)ceil((double)self->super.super.width / BG_TILE_W);
+    self->tiles_x = (uint)ceil((double)self->super.super.height / BG_TILE_W);
     self->tiles_y = (uint)ceil((double)self->super.super.height / BG_TILE_H);
     self->size = self->tiles_x * self->tiles_y;
     self->array = malloc(self->size * sizeof(Rect));
@@ -258,7 +284,7 @@ void Background_update(Background* self, float win_velocity_goal,
         Background_ctor(self, 1, ren);
 
     self->super.vectors.velocityGoal.x = win_velocity_goal;
-    MRect_update((MRect*)self, td, 0);
+    MRect_update((MRect*)self, td, 0, NULL);
 
     for(uint h_i = 0; h_i < self->tiles_y; h_i++)
         for(uint w_i = 0; w_i < self->tiles_x; w_i++)
@@ -270,26 +296,4 @@ void Background_destroy(Background* self) {
     for(uint h_i = 0; h_i < self->tiles_y; h_i++)
         for(uint w_i = 0; w_i < self->tiles_x; w_i++)
             Rect_destroy(&self->array[h_i * self->tiles_x + w_i]);
-}
-
-
-void Foreground_ctor(Foreground* self) {
-    RectArr_ctor(&self->sortX);
-    RectArr_ctor(&self->flagged);
-}
-
-uint Foreground_add(Foreground* self, Rect* obj) {
-    uint addFailed = RectArr_add(&self->sortX, obj);
-    if(!addFailed)
-        RectArr_sort(&self->sortX, 'x');
-    return addFailed;
-}
-
-void Foreground_del(Foreground* self, Rect* obj) {
-    RectArr_del(&self->sortX, obj);
-}
-
-void Foreground_destroy(Foreground* self) {
-    RectArr_destroy(&self->sortX);
-    RectArr_destroy(&self->flagged);
 }

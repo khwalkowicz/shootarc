@@ -67,6 +67,7 @@ void RectArr_ctor(RectArr* self);
 uint RectArr_add(RectArr* self, Rect* rectPtr);
 void RectArr_sort(RectArr* self, char towards);
 void RectArr_del(RectArr* self, Rect* rectPtr);
+RectArr RectArr_checkCollision(RectArr* fg, Rect* obj);
 void RectArr_destroy(RectArr* self);
 
 
@@ -77,7 +78,7 @@ typedef struct MRect {
 
 void MRect_ctor(MRect* self, float x, float y,
                 float width, float height, SDL_Texture* tex);
-void MRect_update(MRect* self, float td, uint checkCollision);
+void MRect_update(MRect* self, float td, uint checkCollision, RectArr* fg);
 
 
 typedef struct Player {
@@ -106,17 +107,5 @@ void Background_update(Background* self, float win_velocity_goal,
                        float td, SDL_Renderer* ren);
 void Background_destroy(Background* self);
 
-
-/* Foreground stores all Rects rendered in the window's foreground.
- * It is used for collision detection. */
-typedef struct Foreground {
-    RectArr sortX;
-    RectArr flagged;
-} Foreground;
-
-void Foreground_ctor(Foreground* self);
-uint Foreground_add(Foreground* self, Rect* rectPtr);
-void Foreground_del(Foreground* self, Rect* rectPtr);
-void Foreground_destroy(Foreground* self);
 
 #endif //ARCSHOOT_CLASSES_H
