@@ -23,6 +23,6 @@ void renderTexture(SDL_Texture* tex, SDL_Renderer* ren, uint x, uint y);
 float approach(float goal, float curr, double dt);
 
 void Win_controls(float* win_velocity_goal, Player* player,
-                  SDL_Keycode key, uint keyDown);
+                  uint8_t* keyStates);
 
 #endif //ARCSHOOT_WINDOW_H

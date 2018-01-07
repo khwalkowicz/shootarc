@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <time.h>
+#include <stdint.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "config.h"
@@ -92,7 +93,7 @@ int main() {
     /* MAIN LOOP */
 
     SDL_Event event;
-    int gameRunning = 1;
+    uint gameRunning = 1;
     while(gameRunning) {
         timeCurr = SDL_GetTicks();
         td = (float)(timeCurr - timePrev) / 100;
@@ -103,11 +104,10 @@ int main() {
         if(SDL_PollEvent(&event)) {
             if(event.type == SDL_QUIT)
                 gameRunning = 0;
-            if(event.type == SDL_KEYDOWN)
-                Win_controls(&win_velocity_goal, &player, event.key.keysym.sym, 1);
-            if(event.type == SDL_KEYUP)
-                Win_controls(&win_velocity_goal, &player, event.key.keysym.sym, 0);
         }
+
+        const uint8_t* keyStates = SDL_GetKeyboardState(NULL);
+        Win_controls(&win_velocity_goal, &player, keyStates);
 
         SDL_RenderClear(ren);
 

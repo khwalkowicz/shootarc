@@ -205,32 +205,32 @@ void Player_ctor(Player* self, SDL_Renderer* ren) {
                self->texNorm);
 }
 
-void Player_controls(Player* self, SDL_Keycode key, uint keyDown) {
-    if(keyDown) {
-        if(key == SDLK_UP || key == SDLK_w) {
-            self->super.vectors.velocityGoal.y = -1 * PLAYER_VELOCITY_GOAL;
-            self->super.super.tex = self->texUp;
-        }
-        if(key == SDLK_DOWN || key == SDLK_s) {
-            self->super.vectors.velocityGoal.y = PLAYER_VELOCITY_GOAL;
-            self->super.super.tex = self->texDown;
-        }
-        if(key == SDLK_LEFT || key == SDLK_a) {
-            self->super.vectors.velocityGoal.x = -1 * PLAYER_VELOCITY_GOAL;
-        }
-        if(key == SDLK_RIGHT || key == SDLK_d) {
-            self->super.vectors.velocityGoal.x = PLAYER_VELOCITY_GOAL;
-        }
-    } else {
-        if(key == SDLK_UP || key == SDLK_w ||
-           key == SDLK_DOWN || key == SDLK_s) {
-            self->super.vectors.velocityGoal.y = 0;
-            self->super.super.tex = self->texNorm;
-        }
-        if(key == SDLK_LEFT || key == SDLK_a ||
-           key == SDLK_RIGHT || key == SDLK_d) {
-            self->super.vectors.velocityGoal.x = 0;
-        }
+void Player_controls(Player* self, uint8_t* keyStates) {
+    /* KEY DOWN */
+    if(keyStates[ SDL_SCANCODE_UP ]    || keyStates[ SDL_SCANCODE_W ]) {
+        self->super.vectors.velocityGoal.y = -1 * PLAYER_VELOCITY_GOAL;
+        self->super.super.tex = self->texUp;
+    }
+    if(keyStates[ SDL_SCANCODE_DOWN ]  || keyStates[ SDL_SCANCODE_S ]) {
+        self->super.vectors.velocityGoal.y = PLAYER_VELOCITY_GOAL;
+        self->super.super.tex = self->texDown;
+    }
+    if(keyStates[ SDL_SCANCODE_LEFT ]  || keyStates[ SDL_SCANCODE_A ]) {
+        self->super.vectors.velocityGoal.x = -1 * PLAYER_VELOCITY_GOAL;
+    }
+    if(keyStates[ SDL_SCANCODE_RIGHT ] || keyStates[ SDL_SCANCODE_D ]) {
+        self->super.vectors.velocityGoal.x = PLAYER_VELOCITY_GOAL;
+    }
+
+    /* KEY UP */
+    if(!keyStates[ SDL_SCANCODE_UP ]   && !keyStates[ SDL_SCANCODE_W ] &&
+       !keyStates[ SDL_SCANCODE_DOWN ] && !keyStates[ SDL_SCANCODE_S ]) {
+        self->super.vectors.velocityGoal.y = 0;
+        self->super.super.tex = self->texNorm;
+    }
+    if(!keyStates[ SDL_SCANCODE_LEFT ]  && !keyStates[ SDL_SCANCODE_A ] &&
+       !keyStates[ SDL_SCANCODE_RIGHT ] && !keyStates[ SDL_SCANCODE_D ]) {
+        self->super.vectors.velocityGoal.x = 0;
     }
 }
 

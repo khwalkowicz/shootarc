@@ -89,7 +89,7 @@ typedef struct Player {
 } Player;
 
 void Player_ctor(Player* self, SDL_Renderer* ren);
-void Player_controls(Player* self, SDL_Keycode key, uint keyDown);
+void Player_controls(Player* self, uint8_t* keyStates);
 void Player_destroy(Player* self);
 
 
