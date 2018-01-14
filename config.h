@@ -20,9 +20,11 @@ static uint  BG_TILE_H = 180;
 
 static uint PLAYER_W = 75;
 static uint PLAYER_H = 75;
-
 static float PLAYER_VELOCITY_GOAL = 50;
-static float WIN_VELOCITY = -5.0;
-static float WIN_VELOCITY_GOAL = -50.0;
+static float PLAYER_COOLDOWN = 3.3333;
+static float PLAYER_SHOT_VELOCITY_GOAL = 100;
+
+static float WIN_VELOCITY = -5;
+static float WIN_VELOCITY_GOAL = -50;
 
 #endif //ARCSHOOT_CONFIG_H

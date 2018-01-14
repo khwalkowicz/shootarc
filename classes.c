@@ -41,10 +41,11 @@ void MShape_update(MShape* self, float td) {
 }
 
 
-void Rect_ctor(Rect* self, float x, float y,
-                float width, float height, SDL_Texture* tex) {
+void Rect_ctor(Rect* self, char* type, float x, float y,
+               float width, float height, SDL_Texture* tex){
     Shape_ctor(&self->super, x, y);
 
+    self->type = type;
     self->height = height;
     self->width  = width;
     self->tex    = tex;
@@ -76,17 +77,87 @@ void Rect_destroy(Rect* self) {
 }
 
 
-void RectArr_ctor(RectArr* self) {
+void MRectArr_ctor(MRectArr* self) {
     self->size = 1;
     self->idx  = 0;
-    self->arr  = malloc(self->size * sizeof(Rect*));
+    self->arr  = calloc(self->size, sizeof(MRect));
 }
 
-uint RectArr_add(RectArr* self, Rect* rectPtr) {
+uint MRectArr_add(MRectArr* self, MRect obj) {
     if(self->idx + 1 >= self->size) {
         self->size *= 2;
 
-        Rect** temp = realloc(self->arr, self->size * sizeof(Rect*));
+        MRect* temp = realloc(self->arr, self->size * sizeof(MRect));
+        if(temp != NULL)
+            self->arr = temp;
+        else {
+            free(self->arr);
+            printf("\nMemory alloc problem! Aborting!\n");
+            return 1;
+        }
+    }
+
+    self->arr[self->idx] = obj;
+    self->idx++;
+
+    return 0;
+}
+
+void MRectArr_del(MRectArr* self, uint id) {
+    if(id >= self->idx + 1) {
+        for(; id < self->idx - 1; id++)
+            self->arr[id] = self->arr[id + 1];
+        self->idx--;
+    }
+}
+
+
+void MRect_ctor(MRect* self, char* type, float x, float y,
+                float width, float height, SDL_Texture* tex) {
+    Rect_ctor(&self->super, type, x, y, width, height, tex);
+    Movable_ctor(&self->vectors, 0, 0, 0, 0);
+}
+
+void MRect_update(MRect* self, float td, uint checkCollision, MRectPtrArr* fg) {
+    Movable_update(&self->vectors, td);
+
+    float prevX = self->super.super.x;
+    float prevY = self->super.super.y;
+
+    self->super.super.x += self->vectors.velocity.x * td;
+
+    if(checkCollision) {
+        if(Rect_checkWallsX((Rect*)self) ||
+           MRectPtrArr_checkCollision(fg, self)) {
+            self->super.super.x = prevX;
+        }
+    }
+
+    self->super.super.y += self->vectors.velocity.y * td;
+
+    if(checkCollision) {
+        if(Rect_checkWallsY((Rect*)self) ||
+           MRectPtrArr_checkCollision(fg, self)) {
+            self->super.super.y = prevY;
+        }
+    }
+
+    if(fg != NULL)
+        MRectPtrArr_sort(fg, 'x');
+}
+
+
+void MRectPtrArr_ctor(MRectPtrArr* self) {
+    self->size = 1;
+    self->idx  = 0;
+    self->arr  = calloc(self->size, sizeof(Rect*));
+}
+
+uint MRectPtrArr_add(MRectPtrArr* self, MRect* rectPtr) {
+    if(self->idx + 1 >= self->size) {
+        self->size *= 2;
+
+        MRect** temp = realloc(self->arr, self->size * sizeof(MRect*));
         if(temp != NULL)
             self->arr = temp;
         else {
@@ -102,7 +173,7 @@ uint RectArr_add(RectArr* self, Rect* rectPtr) {
     return 0;
 }
 
-void RectArr_del(RectArr* self, Rect* rectPtr) {
+void MRectPtrArr_del(MRectPtrArr* self, MRect* rectPtr) {
     uint i = 0;
     for(; i < self->idx; i++)
         if(self->arr[i] == rectPtr)
@@ -114,12 +185,13 @@ void RectArr_del(RectArr* self, Rect* rectPtr) {
     }
 }
 
-void RectArr_sort(RectArr* self, char towards) {
+void MRectPtrArr_sort(MRectPtrArr* self, char towards) {
     if(towards == 'x') {
         for(uint i = 1; i < self->idx; ++i) {
-            Rect* tmp = self->arr[i];
+            MRect* tmp = self->arr[i];
             uint j = i;
-            while(j > 0 && tmp->super.x < self->arr[j - 1]->super.x) {
+            while(j > 0 && tmp->super.super.x <
+                                   self->arr[j - 1]->super.super.x) {
                 self->arr[j] = self->arr[j - 1];
                 --j;
             }
@@ -128,9 +200,10 @@ void RectArr_sort(RectArr* self, char towards) {
     }
     if(towards == 'y') {
         for(uint i = 1; i < self->idx; ++i) {
-            Rect* tmp = self->arr[i];
+            MRect* tmp = self->arr[i];
             uint j = i;
-            while(j > 0 && tmp->super.y < self->arr[j - 1]->super.y) {
+            while(j > 0 && tmp->super.super.y <
+                                   self->arr[j - 1]->super.super.y) {
                 self->arr[j] = self->arr[j - 1];
                 --j;
             }
@@ -139,74 +212,65 @@ void RectArr_sort(RectArr* self, char towards) {
     }
 }
 
-uint RectArr_checkCollision(RectArr* fg, Rect* obj) {
-    for(uint i = 0; i < fg->idx; i++) {
-        if(obj->super.x + obj->width < fg->arr[i]->super.x)
+uint MRectPtrArr_checkCollision(MRectPtrArr* self, MRect* obj) {
+    for(uint i = 0; i < self->idx; i++) {
+        if(obj->super.super.x + obj->super.width < self->arr[i]->super.super.x)
             break;
-        if(fg->arr[i] != obj &&
-           (obj->super.x +  obj->width >= fg->arr[i]->super.x &&
-            obj->super.x <= fg->arr[i]->super.x + fg->arr[i]->width) &&
-           (obj->super.y +  obj->height >= fg->arr[i]->super.y &&
-            obj->super.y <= fg->arr[i]->super.y + fg->arr[i]->height)) {
+        if(self->arr[i] != obj &&
+           (obj->super.super.x +  obj->super.width >=
+                    self->arr[i]->super.super.x &&
+            obj->super.super.x <=
+                    self->arr[i]->super.super.x + self->arr[i]->super.width) &&
+           (obj->super.super.y +  obj->super.height >=
+                    self->arr[i]->super.super.y &&
+            obj->super.super.y <=
+                    self->arr[i]->super.super.y + self->arr[i]->super.height))
             return 1;
-        }
     }
     return 0;
 }
 
-void RectArr_destroy(RectArr* self) {
+void MRectPtrArr_render(MRectPtrArr* self, SDL_Renderer* ren) {
+    for(uint i = 0; i < self->idx; i++)
+        if( !strcmp(self->arr[i]->super.type, "player_shot") ||
+            !strcmp(self->arr[i]->super.type, "enemy") )
+            Rect_render((Rect*)self->arr[i], ren);
+}
+
+void MRectPtrArr_update(MRectPtrArr* self, float td) {
+    for(uint i = 0; i < self->idx; i++)
+        if( !strcmp(self->arr[i]->super.type, "player_shot") )
+            MRect_update(self->arr[i], td, 1, self);
+}
+
+void MRectPtrArr_destroy(MRectPtrArr* self) {
+    for(uint i = 0; i < self->idx; i++)
+        if( strcmp(self->arr[i]->super.type, "player") != 0)
+            Rect_destroy((Rect*)self->arr[i]);
     free(self->arr);
 }
 
 
-void MRect_ctor(MRect* self, float x, float y,
-                float width, float height, SDL_Texture* tex) {
-    Rect_ctor(&self->super, x, y, width, height, tex);
-    Movable_ctor(&self->vectors, 0, 0, 0, 0);
-}
-
-void MRect_update(MRect* self, float td, uint checkCollision, RectArr* fg) {
-    Movable_update(&self->vectors, td);
-
-    float prevX = self->super.super.x;
-    float prevY = self->super.super.y;
-
-    self->super.super.x += self->vectors.velocity.x * td;
-
-    if(checkCollision) {
-        if(Rect_checkWallsX((Rect*)self) ||
-           RectArr_checkCollision(fg, (Rect*)self)) {
-            self->super.super.x = prevX;
-        }
-    }
-
-    self->super.super.y += self->vectors.velocity.y * td;
-
-    if(checkCollision) {
-        if(Rect_checkWallsY((Rect*)self) ||
-           RectArr_checkCollision(fg, (Rect*)self)) {
-            self->super.super.y = prevY;
-        }
-    }
-
-    if(fg != NULL)
-        RectArr_sort(fg, 'x');
-}
-
-
-void Player_ctor(Player* self, SDL_Renderer* ren) {
+void Player_ctor(Player* self, MRectPtrArr* fg, SDL_Renderer* ren) {
     self->texUp   = loadTexture(ren, "player_up.png");
     self->texNorm = loadTexture(ren, "player.png");
     self->texDown = loadTexture(ren, "player_down.png");
 
+    self->cooldown = PLAYER_COOLDOWN;
+
     MRect_ctor(&self->super,
+               "player",
                25, (SCREEN_HEIGHT / 2) - (75 / 2),
                PLAYER_W, PLAYER_H,
                self->texNorm);
+
+    MRectArr_ctor(&self->shots);
+
+    MRectPtrArr_add(fg, (MRect*)self);
 }
 
-void Player_controls(Player* self, uint8_t* keyStates) {
-    /* KEY DOWN */
+void Player_move(Player* self, const uint8_t* keyStates) {
+    /* BASIC CONTROLS */
     if(keyStates[ SDL_SCANCODE_UP ]    || keyStates[ SDL_SCANCODE_W ]) {
         self->super.vectors.velocityGoal.y = -1 * PLAYER_VELOCITY_GOAL;
         self->super.super.tex = self->texUp;
@@ -222,7 +286,7 @@ void Player_controls(Player* self, uint8_t* keyStates) {
         self->super.vectors.velocityGoal.x = PLAYER_VELOCITY_GOAL;
     }
 
-    /* KEY UP */
+    /* IF NONE */
     if(!keyStates[ SDL_SCANCODE_UP ]   && !keyStates[ SDL_SCANCODE_W ] &&
        !keyStates[ SDL_SCANCODE_DOWN ] && !keyStates[ SDL_SCANCODE_S ]) {
         self->super.vectors.velocityGoal.y = 0;
@@ -234,6 +298,34 @@ void Player_controls(Player* self, uint8_t* keyStates) {
     }
 }
 
+void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren) {
+    if(self->cooldown <= 0) {
+        self->cooldown = PLAYER_COOLDOWN;
+
+        MRect shot;
+        MRect_ctor(&shot,
+                   "player_shot",
+                   self->super.super.super.x + self->super.super.width,
+                   self->super.super.super.y + (self->super.super.width / 2),
+                   41,
+                   6,
+                   loadTexture(ren, "player_shot.png")
+        );
+        shot.vectors.velocityGoal.x = PLAYER_SHOT_VELOCITY_GOAL;
+
+        MRectArr_add(&self->shots, shot);
+
+        MRectPtrArr_add(fg, &self->shots.arr[self->shots.idx - 1]);
+        MRectPtrArr_sort(fg, 'x');
+    }
+}
+
+void Player_update(Player* self, float td, MRectPtrArr* fg) {
+    MRect_update((MRect*)self, td, 1, fg);
+    if(self->cooldown > 0)
+        self->cooldown -= td;
+}
+
 void Player_destroy(Player* self) {
     SDL_DestroyTexture(self->texUp);
     SDL_DestroyTexture(self->texDown);
@@ -242,7 +334,8 @@ void Player_destroy(Player* self) {
 
 
 void Background_ctor(Background* self, float pos, SDL_Renderer* ren) {
-    MRect_ctor(&self->super, pos * SCREEN_WIDTH, 0,
+    MRect_ctor(&self->super, "background",
+               pos * SCREEN_WIDTH, 0,
                SCREEN_WIDTH, SCREEN_HEIGHT, NULL);
 
     self->super.vectors.velocity.x = WIN_VELOCITY;
@@ -262,6 +355,7 @@ void Background_ctor(Background* self, float pos, SDL_Renderer* ren) {
 
             Rect tile;
             Rect_ctor(&tile,
+                      "bg_tile",
                       self->super.super.super.x + w_i * BG_TILE_W,
                       self->super.super.super.y + h_i * BG_TILE_H,
                       BG_TILE_W, BG_TILE_H,

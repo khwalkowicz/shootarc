@@ -58,9 +58,12 @@ float approach(float goal, float curr, double dt) {
     return goal;
 }
 
-void Win_controls(float* win_velocity_goal, Player* player,
-                  uint8_t* keyStates) {
-    Player_controls(player, keyStates);
+void Win_controls(float* win_velocity_goal, Player* player, MRectPtrArr* fg,
+                  SDL_Renderer* ren, const uint8_t* keyStates) {
+    Player_move(player, keyStates);
+
+    if(keyStates[ SDL_SCANCODE_SPACE ])
+        Player_shoot(player, fg, ren);
 
     if(keyStates[ SDL_SCANCODE_Z ] || keyStates[ SDL_SCANCODE_COMMA ] )
         *win_velocity_goal = WIN_VELOCITY_GOAL;

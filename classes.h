@@ -44,12 +44,13 @@ void MShape_update(MShape* self, float td);
 
 typedef struct Rect {
     Shape super;
+    char* type;
     float width;
     float height;
     SDL_Texture* tex;
 } Rect;
 
-void Rect_ctor(Rect* self, float x, float y,
+void Rect_ctor(Rect* self, char* type, float x, float y,
                 float width, float height, SDL_Texture* tex);
 void Rect_render(Rect* self, SDL_Renderer* ren);
 uint Rect_checkWallsX(Rect* self);
@@ -57,28 +58,41 @@ uint Rect_checkWallsY(Rect* self);
 void Rect_destroy(Rect* self);
 
 
-typedef struct RectArr {
-    uint size;
-    uint idx;
-    Rect** arr;
-} RectArr;
-
-void RectArr_ctor(RectArr* self);
-uint RectArr_add(RectArr* self, Rect* rectPtr);
-void RectArr_sort(RectArr* self, char towards);
-void RectArr_del(RectArr* self, Rect* rectPtr);
-uint RectArr_checkCollision(RectArr* fg, Rect* obj);
-void RectArr_destroy(RectArr* self);
-
-
 typedef struct MRect {
     Rect super;
     Movable vectors;
 } MRect;
 
-void MRect_ctor(MRect* self, float x, float y,
+typedef struct MRectPtrArr {
+    uint size;
+    uint idx;
+    MRect** arr;
+} MRectPtrArr;
+
+void MRect_ctor(MRect* self, char* type, float x, float y,
                 float width, float height, SDL_Texture* tex);
-void MRect_update(MRect* self, float td, uint checkCollision, RectArr* fg);
+void MRect_update(MRect* self, float td, uint checkCollision, MRectPtrArr* fg);
+
+
+typedef struct MRectArr {
+    uint size;
+    uint idx;
+    MRect* arr;
+} MRectArr;
+
+void MRectArr_ctor(MRectArr* self);
+uint MRectArr_add(MRectArr* self, MRect obj);
+void MRectArr_del(MRectArr* self, uint id);
+
+
+void MRectPtrArr_ctor(MRectPtrArr* self);
+uint MRectPtrArr_add(MRectPtrArr* self, MRect* rectPtr);
+void MRectPtrArr_sort(MRectPtrArr* self, char towards);
+void MRectPtrArr_del(MRectPtrArr* self, MRect* rectPtr);
+uint MRectPtrArr_checkCollision(MRectPtrArr* self, MRect* obj);
+void MRectPtrArr_render(MRectPtrArr* self, SDL_Renderer* ren);
+void MRectPtrArr_update(MRectPtrArr* self, float td);
+void MRectPtrArr_destroy(MRectPtrArr* self);
 
 
 typedef struct Player {
@@ -86,10 +100,14 @@ typedef struct Player {
     SDL_Texture* texUp;
     SDL_Texture* texNorm;
     SDL_Texture* texDown;
+    float cooldown;
+    MRectArr shots;
 } Player;
 
-void Player_ctor(Player* self, SDL_Renderer* ren);
-void Player_controls(Player* self, uint8_t* keyStates);
+void Player_ctor(Player* self, MRectPtrArr* fg, SDL_Renderer* ren);
+void Player_move(Player* self, const uint8_t* keyStates);
+void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren);
+void Player_update(Player* self, float td, MRectPtrArr* fg);
 void Player_destroy(Player* self);
 
 

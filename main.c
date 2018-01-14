@@ -51,8 +51,8 @@ int main() {
 
     float win_velocity_goal = WIN_VELOCITY;
 
-    RectArr fg;
-    RectArr_ctor(&fg);
+    MRectPtrArr fg;
+    MRectPtrArr_ctor(&fg);
 
     Background bg0;
     Background_ctor(&bg0, 0, ren);
@@ -60,28 +60,27 @@ int main() {
     Background_ctor(&bg1, 1, ren);
 
     Player player;
-    Player_ctor(&player, ren);
-    RectArr_add(&fg, (Rect*)&player);
+    Player_ctor(&player, &fg, ren);
 
-    Rect enemy1;
-    Rect_ctor(&enemy1, 550, 213, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    RectArr_add(&fg, &enemy1);
-    RectArr_sort(&fg, 'x');
+    MRect enemy1;
+    MRect_ctor(&enemy1, "enemy", 550, 213, 59, 64, loadTexture(ren, "enemies/black1.png"));
+    MRectPtrArr_add(&fg, &enemy1);
+    MRectPtrArr_sort(&fg, 'x');
 
-    Rect enemy2;
-    Rect_ctor(&enemy2, 700, 25, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    RectArr_add(&fg, &enemy2);
-    RectArr_sort(&fg, 'x');
+    MRect enemy2;
+    MRect_ctor(&enemy2, "enemy", 700, 25, 59, 64, loadTexture(ren, "enemies/black1.png"));
+    MRectPtrArr_add(&fg, &enemy2);
+    MRectPtrArr_sort(&fg, 'x');
 
-    Rect enemy3;
-    Rect_ctor(&enemy3, 800, 420, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    RectArr_add(&fg, &enemy3);
-    RectArr_sort(&fg, 'x');
+    MRect enemy3;
+    MRect_ctor(&enemy3, "enemy", 800, 420, 59, 64, loadTexture(ren, "enemies/black1.png"));
+    MRectPtrArr_add(&fg, &enemy3);
+    MRectPtrArr_sort(&fg, 'x');
 
-    Rect enemy4;
-    Rect_ctor(&enemy4, 600, 300, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    RectArr_add(&fg, &enemy4);
-    RectArr_sort(&fg, 'x');
+    MRect enemy4;
+    MRect_ctor(&enemy4, "enemy", 600, 300, 59, 64, loadTexture(ren, "enemies/black1.png"));
+    MRectPtrArr_add(&fg, &enemy4);
+    MRectPtrArr_sort(&fg, 'x');
 
 
     /* GET TIME DELTA */
@@ -107,7 +106,12 @@ int main() {
         }
 
         const uint8_t* keyStates = SDL_GetKeyboardState(NULL);
-        Win_controls(&win_velocity_goal, &player, keyStates);
+        Win_controls(&win_velocity_goal, &player, &fg, ren, keyStates);
+
+        if(keyStates[ SDL_SCANCODE_SPACE ])
+            for(uint i = 0; i < fg.idx; i++) {
+                printf("test: i=%u idx=%u type=%s \n", i, fg.idx, fg.arr[i]->super.type);
+            }
 
         SDL_RenderClear(ren);
 
@@ -117,12 +121,10 @@ int main() {
         Background_update(&bg1, win_velocity_goal, td, ren);
 
         Rect_render((Rect*)&player, ren);
-        MRect_update((MRect*)&player, td, 1, &fg);
+        Player_update(&player, td, &fg);
 
-        Rect_render(&enemy1, ren);
-        Rect_render(&enemy2, ren);
-        Rect_render(&enemy3, ren);
-        Rect_render(&enemy4, ren);
+        MRectPtrArr_render(&fg, ren);
+        MRectPtrArr_update(&fg, td);
 
         SDL_RenderPresent(ren);
     }
@@ -130,12 +132,8 @@ int main() {
 
     /* DESTROY MALLOCS, TEXTURES AND SDL */
 
-    Rect_destroy(&enemy1);
-    Rect_destroy(&enemy2);
-    Rect_destroy(&enemy3);
-    Rect_destroy(&enemy4);
     Player_destroy(&player);
-    RectArr_destroy(&fg);
+    MRectPtrArr_destroy(&fg);
     Background_destroy(&bg0);
     Background_destroy(&bg1);
 
