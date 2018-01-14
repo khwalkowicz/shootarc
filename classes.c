@@ -306,7 +306,8 @@ void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren) {
         MRect_ctor(&shot,
                    "player_shot",
                    self->super.super.super.x + self->super.super.width,
-                   self->super.super.super.y + (self->super.super.width / 2),
+                   self->super.super.super.y + (self->super.super.width / 2)
+                                             - 3,
                    41,
                    6,
                    loadTexture(ren, "player_shot.png")
