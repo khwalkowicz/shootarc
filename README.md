@@ -17,7 +17,11 @@
 ##### Assets
 Most of the assets come from or are based upon
 [Kenney's Space Shooter Redux](http://www.kenney.nl/assets/space-shooter-redux).
-Copyright [Kenney](http://www.kenney.nl) 2010-2018. All rights reserved.
+Used upon the Creative Commons Public Domain license.  
+Explosion animation comes from
+[OpenGameArt.org](https://opengameart.org/content/explosion-animations)
+ans was created by [Jetrel](https://opengameart.org/users/jetrel).
+Used upon the Creative Commons Public Domain license.  
 
 ##### Code
 Some code is based on

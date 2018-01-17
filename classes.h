@@ -33,21 +33,15 @@ void Movable_ctor(Movable* self, float velX, float velY,
                   float velGoalX, float velGoalY);
 void Movable_update(Movable* self, float td);
 
-typedef struct MShape {
-    Shape  super;
-    Movable vectors;
-} MShape;
-
-void MShape_ctor(MShape* self, float x, float y);
-void MShape_update(MShape* self, float td);
-
 
 typedef struct Rect {
     Shape super;
     char* type;
     float width;
     float height;
+    uint explosionState;
     SDL_Texture* tex;
+    SDL_Texture* explosionTex;
 } Rect;
 
 void Rect_ctor(Rect* self, char* type, float x, float y,
@@ -63,15 +57,9 @@ typedef struct MRect {
     Movable vectors;
 } MRect;
 
-typedef struct MRectPtrArr {
-    uint size;
-    uint idx;
-    MRect** arr;
-} MRectPtrArr;
-
 void MRect_ctor(MRect* self, char* type, float x, float y,
                 float width, float height, SDL_Texture* tex);
-void MRect_update(MRect* self, float td, uint checkCollision, MRectPtrArr* fg);
+// int MRect_update() later in this file
 
 
 typedef struct MRectArr {
@@ -85,13 +73,19 @@ uint MRectArr_add(MRectArr* self, MRect obj);
 void MRectArr_del(MRectArr* self, uint id);
 
 
+typedef struct MRectPtrArr {
+    uint size;
+    uint idx;
+    MRect** arr;
+} MRectPtrArr;
+
 void MRectPtrArr_ctor(MRectPtrArr* self);
 uint MRectPtrArr_add(MRectPtrArr* self, MRect* rectPtr);
 void MRectPtrArr_sort(MRectPtrArr* self, char towards);
 void MRectPtrArr_del(MRectPtrArr* self, MRect* rectPtr);
-uint MRectPtrArr_checkCollision(MRectPtrArr* self, MRect* obj);
+MRect* MRectPtrArr_checkCollision(MRectPtrArr* self, MRect* obj);
 void MRectPtrArr_render(MRectPtrArr* self, SDL_Renderer* ren);
-void MRectPtrArr_update(MRectPtrArr* self, float td);
+// void MRectPtrArr_update() later in this file
 void MRectPtrArr_destroy(MRectPtrArr* self);
 
 
@@ -104,12 +98,25 @@ typedef struct Player {
     MRectArr shots;
 } Player;
 
+int MRect_update(MRect* self, float td, uint checkCollision, Player* player,
+                 MRectArr* enemies, MRectPtrArr* fg, SDL_Renderer* ren);
+
+void MRectPtrArr_update(MRectPtrArr* self, float td, Player* player,
+                        MRectArr* enemies, SDL_Renderer* ren);
+
 void Player_ctor(Player* self, MRectPtrArr* fg, SDL_Renderer* ren);
 void Player_move(Player* self, const uint8_t* keyStates);
 void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren);
 void Player_update(Player* self, float td, MRectPtrArr* fg);
+void Player_handleShot(Player* self, MRectPtrArr* fg,
+                       MRect* obj, MRect* coll);
 void Player_destroy(Player* self);
 
+
+void Obstacle_ctor(MRectArr* enemies, char* type, float x, float y,
+                   MRectPtrArr* fg, SDL_Renderer* ren);
+void Obstacle_explode(MRect* self, MRectArr* enemies,
+                      MRectPtrArr* fg, SDL_Renderer* ren);
 
 typedef struct Background {
     MRect super;

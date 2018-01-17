@@ -18,7 +18,8 @@ void showFPSinTitle(SDL_Window* win, float timeDelta);
 
 SDL_Texture* loadTexture(SDL_Renderer* ren, char* str);
 
-void renderTexture(SDL_Texture* tex, SDL_Renderer* ren, uint x, uint y);
+void renderTexture(SDL_Texture *tex, SDL_Renderer *ren,
+                   int x, int y, SDL_Rect *clip);
 
 float approach(float goal, float curr, double dt);
 

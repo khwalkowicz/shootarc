@@ -44,7 +44,7 @@ int main() {
         SDL_Quit();
         return 1;
     }
-    SDL_SetRenderDrawColor(ren, 9, 0, 22, 1);
+    SDL_SetRenderDrawColor(ren, 20, 14, 35, 1);
 
 
     /* OBJECT INITS */
@@ -62,25 +62,13 @@ int main() {
     Player player;
     Player_ctor(&player, &fg, ren);
 
-    MRect enemy1;
-    MRect_ctor(&enemy1, "enemy", 550, 213, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    MRectPtrArr_add(&fg, &enemy1);
-    MRectPtrArr_sort(&fg, 'x');
+    MRectArr enemies;
+    MRectArr_ctor(&enemies);
 
-    MRect enemy2;
-    MRect_ctor(&enemy2, "enemy", 700, 25, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    MRectPtrArr_add(&fg, &enemy2);
-    MRectPtrArr_sort(&fg, 'x');
-
-    MRect enemy3;
-    MRect_ctor(&enemy3, "enemy", 800, 420, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    MRectPtrArr_add(&fg, &enemy3);
-    MRectPtrArr_sort(&fg, 'x');
-
-    MRect enemy4;
-    MRect_ctor(&enemy4, "enemy", 600, 300, 59, 64, loadTexture(ren, "enemies/black1.png"));
-    MRectPtrArr_add(&fg, &enemy4);
-    MRectPtrArr_sort(&fg, 'x');
+    Obstacle_ctor(&enemies, "enemy", 550, 213, &fg, ren);
+    Obstacle_ctor(&enemies, "enemy", 700,  25, &fg, ren);
+    Obstacle_ctor(&enemies, "enemy", 800, 420, &fg, ren);
+    Obstacle_ctor(&enemies, "enemy", 600, 300, &fg, ren);
 
 
     /* GET TIME DELTA */
@@ -108,11 +96,6 @@ int main() {
         const uint8_t* keyStates = SDL_GetKeyboardState(NULL);
         Win_controls(&win_velocity_goal, &player, &fg, ren, keyStates);
 
-        if(keyStates[ SDL_SCANCODE_SPACE ])
-            for(uint i = 0; i < fg.idx; i++) {
-                printf("test: i=%u idx=%u type=%s \n", i, fg.idx, fg.arr[i]->super.type);
-            }
-
         SDL_RenderClear(ren);
 
         Background_render(&bg0, ren);
@@ -124,7 +107,7 @@ int main() {
         Player_update(&player, td, &fg);
 
         MRectPtrArr_render(&fg, ren);
-        MRectPtrArr_update(&fg, td);
+        MRectPtrArr_update(&fg, td, &player, &enemies, ren);
 
         SDL_RenderPresent(ren);
     }

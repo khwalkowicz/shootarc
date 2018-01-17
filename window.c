@@ -39,12 +39,18 @@ SDL_Texture* loadTexture(SDL_Renderer* ren, char* str) {
     return texture;
 }
 
-void renderTexture(SDL_Texture* tex, SDL_Renderer* ren, uint x, uint y) {
-    SDL_Rect dest;
-    dest.x = x;
-    dest.y = y;
-    SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
-    SDL_RenderCopy(ren, tex, NULL, &dest);
+void renderTexture(SDL_Texture *tex, SDL_Renderer *ren,
+                   int x, int y, SDL_Rect *clip) {
+    SDL_Rect dst;
+    dst.x = x;
+    dst.y = y;
+    if (clip != NULL) {
+        dst.w = clip->w;
+        dst.h = clip->h;
+    }
+    else
+        SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
+    SDL_RenderCopy(ren, tex, clip, &dst);
 }
 
 float approach(float goal, float curr, double dt) {

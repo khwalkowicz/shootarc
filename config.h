@@ -24,6 +24,11 @@ static float PLAYER_VELOCITY_GOAL = 50;
 static float PLAYER_COOLDOWN = 3.3333;
 static float PLAYER_SHOT_VELOCITY_GOAL = 100;
 
+static uint ENEMY_W = 59;
+static uint ENEMY_H = 64;
+static uint ENEMY_EXPLOSION_W = 88;
+static uint ENEMY_EXPLOSION_H = 88;
+
 static float WIN_VELOCITY = -5;
 static float WIN_VELOCITY_GOAL = -50;
 

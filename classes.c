@@ -28,27 +28,16 @@ void Movable_update(Movable* self, float td) {
     self->velocity.y = approach(self->velocityGoal.y, self->velocity.y, td * 50);
 }
 
-void MShape_ctor(MShape* self, float x, float y) {
-    Shape_ctor(&self->super, x, y);
-    Movable_ctor(&self->vectors, 0, 0, 0, 0);
-}
-
-void MShape_update(MShape* self, float td) {
-    Movable_update(&self->vectors, td);
-
-    self->super.x += self->vectors.velocity.x * td;
-    self->super.y += self->vectors.velocity.y * td;
-}
-
 
 void Rect_ctor(Rect* self, char* type, float x, float y,
                float width, float height, SDL_Texture* tex){
     Shape_ctor(&self->super, x, y);
 
-    self->type = type;
+    self->type   = type;
     self->height = height;
     self->width  = width;
     self->tex    = tex;
+    self->explosionState = 0;
 }
 
 void Rect_render(Rect* self, SDL_Renderer* ren) {
@@ -74,6 +63,54 @@ uint Rect_checkWallsY(Rect* self) {
 
 void Rect_destroy(Rect* self) {
     SDL_DestroyTexture(self->tex);
+}
+
+
+void MRect_ctor(MRect* self, char* type, float x, float y,
+                float width, float height, SDL_Texture* tex) {
+    Rect_ctor(&self->super, type, x, y, width, height, tex);
+    Movable_ctor(&self->vectors, 0, 0, 0, 0);
+}
+
+int MRect_update(MRect* self, float td, uint checkCollision, Player* player,
+                 MRectArr* enemies, MRectPtrArr* fg, SDL_Renderer* ren) {
+    Movable_update(&self->vectors, td);
+
+    float prevX = self->super.super.x;
+    float prevY = self->super.super.y;
+
+    self->super.super.x += self->vectors.velocity.x * td;
+
+    if(checkCollision) {
+        MRect* coll = MRectPtrArr_checkCollision(fg, self);
+        if(Rect_checkWallsX((Rect*)self) || coll != NULL) {
+            self->super.super.x = prevX;
+            if( !strcmp(self->super.type, "player_shot") ) {
+                Player_handleShot(player, fg, self, coll);
+                return 0;
+            }
+        }
+    }
+
+    self->super.super.y += self->vectors.velocity.y * td;
+
+    if(checkCollision) {
+        MRect* coll = MRectPtrArr_checkCollision(fg, self);
+        if(Rect_checkWallsY((Rect*)self) || coll != NULL) {
+            self->super.super.y = prevY;
+            if( !strcmp(self->super.type, "player_shot") ) {
+                Player_handleShot(player, fg, self, coll);
+                return 0;
+            }
+        }
+    }
+
+    if(enemies != NULL && self->super.explosionState)
+        Obstacle_explode(self, enemies, fg, ren);
+
+    if(fg != NULL)
+        MRectPtrArr_sort(fg, 'x');
+    return 0;
 }
 
 
@@ -109,41 +146,6 @@ void MRectArr_del(MRectArr* self, uint id) {
             self->arr[id] = self->arr[id + 1];
         self->idx--;
     }
-}
-
-
-void MRect_ctor(MRect* self, char* type, float x, float y,
-                float width, float height, SDL_Texture* tex) {
-    Rect_ctor(&self->super, type, x, y, width, height, tex);
-    Movable_ctor(&self->vectors, 0, 0, 0, 0);
-}
-
-void MRect_update(MRect* self, float td, uint checkCollision, MRectPtrArr* fg) {
-    Movable_update(&self->vectors, td);
-
-    float prevX = self->super.super.x;
-    float prevY = self->super.super.y;
-
-    self->super.super.x += self->vectors.velocity.x * td;
-
-    if(checkCollision) {
-        if(Rect_checkWallsX((Rect*)self) ||
-           MRectPtrArr_checkCollision(fg, self)) {
-            self->super.super.x = prevX;
-        }
-    }
-
-    self->super.super.y += self->vectors.velocity.y * td;
-
-    if(checkCollision) {
-        if(Rect_checkWallsY((Rect*)self) ||
-           MRectPtrArr_checkCollision(fg, self)) {
-            self->super.super.y = prevY;
-        }
-    }
-
-    if(fg != NULL)
-        MRectPtrArr_sort(fg, 'x');
 }
 
 
@@ -212,7 +214,7 @@ void MRectPtrArr_sort(MRectPtrArr* self, char towards) {
     }
 }
 
-uint MRectPtrArr_checkCollision(MRectPtrArr* self, MRect* obj) {
+MRect* MRectPtrArr_checkCollision(MRectPtrArr* self, MRect* obj) {
     for(uint i = 0; i < self->idx; i++) {
         if(obj->super.super.x + obj->super.width < self->arr[i]->super.super.x)
             break;
@@ -225,9 +227,9 @@ uint MRectPtrArr_checkCollision(MRectPtrArr* self, MRect* obj) {
                     self->arr[i]->super.super.y &&
             obj->super.super.y <=
                     self->arr[i]->super.super.y + self->arr[i]->super.height))
-            return 1;
+            return self->arr[i];
     }
-    return 0;
+    return NULL;
 }
 
 void MRectPtrArr_render(MRectPtrArr* self, SDL_Renderer* ren) {
@@ -237,10 +239,12 @@ void MRectPtrArr_render(MRectPtrArr* self, SDL_Renderer* ren) {
             Rect_render((Rect*)self->arr[i], ren);
 }
 
-void MRectPtrArr_update(MRectPtrArr* self, float td) {
+void MRectPtrArr_update(MRectPtrArr* self, float td, Player* player,
+                        MRectArr* enemies, SDL_Renderer* ren) {
     for(uint i = 0; i < self->idx; i++)
-        if( !strcmp(self->arr[i]->super.type, "player_shot") )
-            MRect_update(self->arr[i], td, 1, self);
+        if( !strcmp(self->arr[i]->super.type, "player_shot") ||
+            !strcmp(self->arr[i]->super.type, "enemy") )
+            MRect_update(self->arr[i], td, 1, player, enemies, self, ren);
 }
 
 void MRectPtrArr_destroy(MRectPtrArr* self) {
@@ -314,7 +318,23 @@ void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren) {
         );
         shot.vectors.velocityGoal.x = PLAYER_SHOT_VELOCITY_GOAL;
 
+        /*
+         * Since adding obj to an array might cause realloc
+         * I'm storing current address of the array and later
+         * repoint pointers to the array's elements
+         */
+        MRect* temp = self->shots.arr;
+
         MRectArr_add(&self->shots, shot);
+
+        if(self->shots.arr != temp) {
+            MRect* max = temp + (self->shots.idx - 1) * sizeof(MRect);
+            for (uint i = 0; i < fg->idx; i++)
+                if(temp <= fg->arr[i] && fg->arr[i] <= max) {
+                    size_t idx = (fg->arr[i] - temp);
+                    fg->arr[i] = &self->shots.arr[idx];
+                }
+        }
 
         MRectPtrArr_add(fg, &self->shots.arr[self->shots.idx - 1]);
         MRectPtrArr_sort(fg, 'x');
@@ -322,15 +342,85 @@ void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren) {
 }
 
 void Player_update(Player* self, float td, MRectPtrArr* fg) {
-    MRect_update((MRect*)self, td, 1, fg);
+    MRect_update((MRect*)self, td, 1, self, NULL, fg, NULL);
     if(self->cooldown > 0)
         self->cooldown -= td;
+}
+
+void Player_handleShot(Player* self, MRectPtrArr* fg,
+                       MRect* obj, MRect* coll) {
+    if(coll && !strcmp(coll->super.type, "enemy"))
+        coll->super.explosionState = 1;
+    Rect_destroy((Rect*)obj);
+    size_t idx = obj - self->shots.arr;
+    MRectPtrArr_del(fg, obj);
+    MRectArr_del(&self->shots, (uint)idx);
 }
 
 void Player_destroy(Player* self) {
     SDL_DestroyTexture(self->texUp);
     SDL_DestroyTexture(self->texDown);
     SDL_DestroyTexture(self->texNorm);
+}
+
+
+void Obstacle_ctor(MRectArr* enemies, char* type, float x, float y,
+                   MRectPtrArr* fg, SDL_Renderer* ren) {
+    MRect obj;
+
+    if( !strcmp(type, "enemy") ) {
+        MRect_ctor(&obj, "enemy",
+                   x, y, ENEMY_W, ENEMY_H,
+                   loadTexture(ren, "enemies/black1.png")
+        );
+        obj.super.explosionTex = loadTexture(ren, "enemies/explode.png");
+
+        /*
+         * Since adding obj to an array might cause realloc
+         * I'm storing current address of the array and later
+         * repoint pointers to the array's elements
+         */
+        MRect* temp = enemies->arr;
+
+        MRectArr_add(enemies, obj);
+
+        if(enemies->arr != temp) {
+            MRect* max = temp + (enemies->idx - 1) * sizeof(MRect);
+            for(uint i = 0; i < fg->idx; i++)
+                if(temp <= fg->arr[i] && fg->arr[i] <= max) {
+                    size_t idx = (fg->arr[i] - temp);
+                    fg->arr[i] = &enemies->arr[idx];
+                }
+        }
+
+        MRectPtrArr_add(fg, &enemies->arr[enemies->idx - 1]);
+    }
+
+    MRectPtrArr_sort(fg, 'x');
+}
+
+void Obstacle_explode(MRect* self, MRectArr* enemies,
+                      MRectPtrArr* fg, SDL_Renderer* ren) {
+    SDL_Rect clip = {
+            (self->super.explosionState % 5) * ENEMY_EXPLOSION_W,
+            (self->super.explosionState / 5) * ENEMY_EXPLOSION_H,
+            ENEMY_EXPLOSION_W, ENEMY_EXPLOSION_H
+    };
+    renderTexture(self->super.explosionTex, ren,
+                  (int)self->super.super.x - (ENEMY_EXPLOSION_W - ENEMY_W) / 2,
+                  (int)self->super.super.y - (ENEMY_EXPLOSION_H - ENEMY_H) / 2,
+                  &clip
+    );
+    if(self->super.explosionState == 5) {
+        Rect_destroy((Rect*)self);
+        MRectPtrArr_del(fg, self);
+    }
+    if(self->super.explosionState == 10) {
+        size_t idx = self - enemies->arr;
+        MRectArr_del(enemies, (uint)idx);
+    }
+    if(self->super.explosionState < 10)
+        self->super.explosionState++;
 }
 
 
@@ -379,7 +469,7 @@ void Background_update(Background* self, float win_velocity_goal,
         Background_ctor(self, 1, ren);
 
     self->super.vectors.velocityGoal.x = win_velocity_goal;
-    MRect_update((MRect*)self, td, 0, NULL);
+    MRect_update((MRect*)self, td, 0, NULL, NULL, NULL, NULL);
 
     for(uint h_i = 0; h_i < self->tiles_y; h_i++)
         for(uint w_i = 0; w_i < self->tiles_x; w_i++)
