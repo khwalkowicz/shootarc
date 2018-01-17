@@ -4,17 +4,24 @@
 #### Controls
 ##### Right-handed
 **Steering**: W A S D  
-**Turbo**: comma
+**Turbo**: comma  
+**Shoot**: space
 
 ##### Left-handed
 **Steering**: Arrow keys  
-**Turbo**: z
+**Turbo**: z  
+**Shoot**: space
 
 
 #### Copyrights
 ##### Assets
-Most of the assets come from or are based upon [Kenney's Space Shooter Redux](kenney.nl/assets/space-shooter-redux). Copyright [Kenney](kenney.nl) 2010-2018. All rights reserved.
+Most of the assets come from or are based upon
+[Kenney's Space Shooter Redux](http://www.kenney.nl/assets/space-shooter-redux).
+Copyright [Kenney](http://www.kenney.nl) 2010-2018. All rights reserved.
 
 ##### Code
-Some code is based on [Twinklebear's SDL2.0 tutorial](http://www.willusher.io/pages/sdl2/0). Copyright [Will Usher](willusher.io) 2013-2018. All rights reserved.  
-Rest of the code: Copyright [Kamil Walkowicz](twitter.com/khwalkowicz) 2018. All rights reserved.
+Some code is based on
+[Twinklebear's SDL2.0 tutorial](http://www.willusher.io/pages/sdl2/0).
+Copyright [Will Usher](http://www.willusher.io) 2013-2018. All rights reserved.  
+Rest of the code: Copyright [Kamil Walkowicz](http://twitter.com/khwalkowicz)
+2018 . All rights reserved.
