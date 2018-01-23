@@ -4,12 +4,10 @@
 #### Controls
 ##### Right-handed
 **Steering**: W A S D  
-**Turbo**: comma  
 **Shoot**: space
 
 ##### Left-handed
 **Steering**: Arrow keys  
-**Turbo**: z  
 **Shoot**: space
 
 

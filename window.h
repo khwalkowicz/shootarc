@@ -19,11 +19,13 @@ void showFPSinTitle(SDL_Window* win, float timeDelta);
 SDL_Texture* loadTexture(SDL_Renderer* ren, char* str);
 
 void renderTexture(SDL_Texture *tex, SDL_Renderer *ren,
-                   int x, int y, SDL_Rect *clip);
+                   int x, int y, int w, int h, SDL_Rect *clip);
 
 float approach(float goal, float curr, double dt);
 
-void Win_controls(float* win_velocity_goal, Player* player, MRectPtrArr* fg,
+int sign(float x);
+
+void Win_controls(Player* player, MRectPtrArr* fg,
                   SDL_Renderer* ren, const uint8_t* keyStates);
 
 #endif //ARCSHOOT_WINDOW_H

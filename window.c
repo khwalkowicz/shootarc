@@ -40,16 +40,12 @@ SDL_Texture* loadTexture(SDL_Renderer* ren, char* str) {
 }
 
 void renderTexture(SDL_Texture *tex, SDL_Renderer *ren,
-                   int x, int y, SDL_Rect *clip) {
+                   int x, int y, int w, int h, SDL_Rect *clip) {
     SDL_Rect dst;
     dst.x = x;
     dst.y = y;
-    if (clip != NULL) {
-        dst.w = clip->w;
-        dst.h = clip->h;
-    }
-    else
-        SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
+    dst.w = w;
+    dst.h = h;
     SDL_RenderCopy(ren, tex, clip, &dst);
 }
 
@@ -64,15 +60,19 @@ float approach(float goal, float curr, double dt) {
     return goal;
 }
 
-void Win_controls(float* win_velocity_goal, Player* player, MRectPtrArr* fg,
+int sign(float x) {
+    if(x < 0)
+        return -1;
+    if(!x)
+        return 0;
+    return 1;
+}
+
+void Win_controls(Player* player, MRectPtrArr* fg,
                   SDL_Renderer* ren, const uint8_t* keyStates) {
     Player_move(player, keyStates);
 
     if(keyStates[ SDL_SCANCODE_SPACE ])
         Player_shoot(player, fg, ren);
 
-    if(keyStates[ SDL_SCANCODE_Z ] || keyStates[ SDL_SCANCODE_COMMA ] )
-        *win_velocity_goal = WIN_VELOCITY_GOAL;
-    else
-        *win_velocity_goal = WIN_VELOCITY;
 }

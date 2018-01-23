@@ -49,8 +49,6 @@ int main() {
 
     /* OBJECT INITS */
 
-    float win_velocity_goal = WIN_VELOCITY;
-
     MRectPtrArr fg;
     MRectPtrArr_ctor(&fg);
 
@@ -62,13 +60,51 @@ int main() {
     Player player;
     Player_ctor(&player, &fg, ren);
 
-    MRectArr enemies;
-    MRectArr_ctor(&enemies);
+    EnemyArr enemies;
+    EnemyArr_ctor(&enemies);
 
-    Obstacle_ctor(&enemies, "enemy", 550, 213, &fg, ren);
-    Obstacle_ctor(&enemies, "enemy", 700,  25, &fg, ren);
-    Obstacle_ctor(&enemies, "enemy", 800, 420, &fg, ren);
-    Obstacle_ctor(&enemies, "enemy", 600, 300, &fg, ren);
+    // WILL REMOVE THAT IN A BIT
+    Enemy_ctor(&enemies,  25,  980, 179, &fg, ren);
+    Enemy_ctor(&enemies,  28, 1046, 179, &fg, ren);
+    Enemy_ctor(&enemies,  31, 1112, 179, &fg, ren);
+    Enemy_ctor(&enemies,  34, 1178, 179, &fg, ren);
+    Enemy_ctor(&enemies,  37, 1244, 179, &fg, ren);
+    Enemy_ctor(&enemies,  41, 1310, 179, &fg, ren);
+    for(uint i = 0; i < enemies.idx; i++) {
+        Enemy_addPoint(&enemies.arr[i], 958, 179);
+        Enemy_addPoint(&enemies.arr[i], 937, 133);
+        Enemy_addPoint(&enemies.arr[i], 888,  95);
+        Enemy_addPoint(&enemies.arr[i], 829,  68);
+        Enemy_addPoint(&enemies.arr[i], 771,  49);
+        Enemy_addPoint(&enemies.arr[i], 710,  44);
+        Enemy_addPoint(&enemies.arr[i], 647,  22);
+        Enemy_addPoint(&enemies.arr[i], 527,  11);
+        Enemy_addPoint(&enemies.arr[i], 451,   9);
+        Enemy_addPoint(&enemies.arr[i], 394,   7);
+        Enemy_addPoint(&enemies.arr[i], 333,   6);
+        Enemy_addPoint(&enemies.arr[i], -88, 179);
+    }
+
+    Enemy_ctor(&enemies,  25,  980, 311, &fg, ren);
+    Enemy_ctor(&enemies,  28, 1046, 311, &fg, ren);
+    Enemy_ctor(&enemies,  31, 1112, 311, &fg, ren);
+    Enemy_ctor(&enemies,  34, 1178, 311, &fg, ren);
+    Enemy_ctor(&enemies,  37, 1244, 311, &fg, ren);
+    Enemy_ctor(&enemies,  41, 1310, 311, &fg, ren);
+    for(uint i = 6; i < enemies.idx; i++) {
+        Enemy_addPoint(&enemies.arr[i], 958, 311);
+        Enemy_addPoint(&enemies.arr[i], 937, 361);
+        Enemy_addPoint(&enemies.arr[i], 888, 398);
+        Enemy_addPoint(&enemies.arr[i], 829, 425);
+        Enemy_addPoint(&enemies.arr[i], 771, 444);
+        Enemy_addPoint(&enemies.arr[i], 710, 458);
+        Enemy_addPoint(&enemies.arr[i], 647, 470);
+        Enemy_addPoint(&enemies.arr[i], 527, 477);
+        Enemy_addPoint(&enemies.arr[i], 451, 486);
+        Enemy_addPoint(&enemies.arr[i], 394, 488);
+        Enemy_addPoint(&enemies.arr[i], 333, 489);
+        Enemy_addPoint(&enemies.arr[i], -88, 311);
+    }
 
 
     /* GET TIME DELTA */
@@ -94,17 +130,19 @@ int main() {
         }
 
         const uint8_t* keyStates = SDL_GetKeyboardState(NULL);
-        Win_controls(&win_velocity_goal, &player, &fg, ren, keyStates);
+        Win_controls(&player, &fg, ren, keyStates);
 
         SDL_RenderClear(ren);
 
         Background_render(&bg0, ren);
-        Background_update(&bg0, win_velocity_goal, td, ren);
+        Background_update(&bg0, td, ren);
         Background_render(&bg1, ren);
-        Background_update(&bg1, win_velocity_goal, td, ren);
+        Background_update(&bg1, td, ren);
 
         Rect_render((Rect*)&player, ren);
         Player_update(&player, td, &fg);
+
+        EnemyArr_update(&enemies, td, &fg);
 
         MRectPtrArr_render(&fg, ren);
         MRectPtrArr_update(&fg, td, &player, &enemies, ren);

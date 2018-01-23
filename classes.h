@@ -89,6 +89,35 @@ void MRectPtrArr_render(MRectPtrArr* self, SDL_Renderer* ren);
 void MRectPtrArr_destroy(MRectPtrArr* self);
 
 
+typedef struct Enemy {
+    MRect  super;
+    float   enterTime;
+    Vector direction;
+    uint   size;
+    uint   idx;
+    Shape* path;
+} Enemy;
+
+typedef struct EnemyArr {
+    uint size;
+    uint idx;
+    Enemy* arr;
+} EnemyArr;
+
+void Enemy_ctor(EnemyArr* enemies, float enterTime, float x, float y,
+                MRectPtrArr* fg, SDL_Renderer* ren);
+uint Enemy_addPoint(Enemy* self, float x, float y);
+void Enemy_delPoint(Enemy* self, EnemyArr* enemies, MRectPtrArr* fg);
+uint Enemy_update(Enemy* self, float td, EnemyArr* enemies, MRectPtrArr* fg);
+void Enemy_explode(Enemy* self, EnemyArr* enemies,
+                   MRectPtrArr* fg, SDL_Renderer* ren);
+
+void EnemyArr_ctor(EnemyArr* self);
+uint EnemyArr_add(EnemyArr* self, Enemy obj, MRectPtrArr* fg);
+void EnemyArr_update(EnemyArr* self, float td, MRectPtrArr* fg);
+void EnemyArr_del(EnemyArr* self, uint id, MRectPtrArr* fg);
+
+
 typedef struct Player {
     MRect super;
     SDL_Texture* texUp;
@@ -99,10 +128,10 @@ typedef struct Player {
 } Player;
 
 int MRect_update(MRect* self, float td, uint checkCollision, Player* player,
-                 MRectArr* enemies, MRectPtrArr* fg, SDL_Renderer* ren);
+                 EnemyArr* enemies, MRectPtrArr* fg, SDL_Renderer* ren);
 
 void MRectPtrArr_update(MRectPtrArr* self, float td, Player* player,
-                        MRectArr* enemies, SDL_Renderer* ren);
+                        EnemyArr* enemies, SDL_Renderer* ren);
 
 void Player_ctor(Player* self, MRectPtrArr* fg, SDL_Renderer* ren);
 void Player_move(Player* self, const uint8_t* keyStates);
@@ -112,11 +141,6 @@ void Player_handleShot(Player* self, MRectPtrArr* fg,
                        MRect* obj, MRect* coll);
 void Player_destroy(Player* self);
 
-
-void Obstacle_ctor(MRectArr* enemies, char* type, float x, float y,
-                   MRectPtrArr* fg, SDL_Renderer* ren);
-void Obstacle_explode(MRect* self, MRectArr* enemies,
-                      MRectPtrArr* fg, SDL_Renderer* ren);
 
 typedef struct Background {
     MRect super;
@@ -128,8 +152,7 @@ typedef struct Background {
 
 void Background_ctor(Background* self, float pos, SDL_Renderer* ren);
 void Background_render(Background* self, SDL_Renderer* ren);
-void Background_update(Background* self, float win_velocity_goal,
-                       float td, SDL_Renderer* ren);
+void Background_update(Background* self, float td, SDL_Renderer* ren);
 void Background_destroy(Background* self);
 
 

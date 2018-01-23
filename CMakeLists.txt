@@ -3,6 +3,6 @@ project(arcshoot C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(arcshoot main.c classes.c classes.h config.h window.c window.h)
+add_executable(arcshoot main.c classes.c classes.h config.h window.c window.h levels.c)
 
 target_link_libraries(arcshoot SDL2main SDL2 SDL2_image)
