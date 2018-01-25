@@ -18,4 +18,13 @@ void Game_init(Game* self, SDL_Renderer* ren);
 void Game_main(Game* self, Timer* timer, SDL_Renderer* ren);
 void Game_clean(Game* self);
 
+
+typedef struct PauseMenu {
+    Rect menu;
+} PauseMenu;
+
+void PauseMenu_init(PauseMenu* self, SDL_Renderer* ren);
+void PauseMenu_main(PauseMenu* self, SDL_Renderer* ren);
+void PauseMenu_clean(PauseMenu* self);
+
 #endif //ARCSHOOT_ENGINE_H

@@ -7,6 +7,15 @@
 #include "window.h"
 #include "engine.h"
 
+
+void pauseGame(Timer* timer, uint* viewing) {
+    Timer_toggle(timer);
+    if(*viewing == 1)
+        *viewing = 2;
+    else
+        *viewing = 1;
+}
+
 int main() {
 
     srand((uint)time(NULL));
@@ -55,9 +64,13 @@ int main() {
     Background bg1;
     Background_ctor(&bg1, 1, ren);
 
-    // INIT GAME - Game_init(ren);
+    /* INIT GAME LOGIC */
     Game game;
     Game_init(&game, ren);
+
+    /* INIT PAUSE MENU */
+    PauseMenu pausemenu;
+    PauseMenu_init(&pausemenu, ren);
 
     /* START THE TIMER */
     Timer timer;
@@ -68,6 +81,8 @@ int main() {
 
     SDL_Event event;
     uint gameRunning = 1;
+    uint viewing = 1;
+
     while(gameRunning) {
         Timer_update(&timer);
 
@@ -78,7 +93,7 @@ int main() {
                 gameRunning = 0;
             if(event.type == SDL_KEYDOWN)
                 if(event.key.keysym.sym == SDLK_ESCAPE)
-                    Timer_toggle(&timer);
+                    pauseGame(&timer, &viewing);
         }
 
         SDL_RenderClear(ren);
@@ -89,8 +104,12 @@ int main() {
         Background_update(&bg1, timer.dt, ren);
 
 
-        // GAME MAIN LOGIC - Game_main()
+        // GAME MAIN LOGIC
         Game_main(&game, &timer, ren);
+
+        // If pause was pressed
+        if(viewing == 2)
+            PauseMenu_main(&pausemenu, ren);
 
         SDL_RenderPresent(ren);
     }
@@ -98,7 +117,7 @@ int main() {
 
     /* DESTROY MALLOCS, TEXTURES AND SDL */
 
-    // GAME CLEANUP - Game_clean()
+    PauseMenu_clean(&pausemenu);
     Game_clean(&game);
 
     Background_destroy(&bg0);

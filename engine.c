@@ -3,6 +3,7 @@
 //
 
 #include "engine.h"
+#include "config.h"
 
 void Game_init(Game* self, SDL_Renderer* ren) {
     MRectPtrArr_ctor(&self->fg);
@@ -72,4 +73,23 @@ void Game_main(Game* self, Timer* timer, SDL_Renderer* ren) {
 void Game_clean(Game* self) {
     Player_destroy(&self->player);
     MRectPtrArr_destroy(&self->fg);
+}
+
+
+void PauseMenu_init(PauseMenu* self, SDL_Renderer* ren) {
+    Rect_ctor(&self->menu, "menu",
+              (SCREEN_WIDTH  - PAUSE_MENU_W) / 2,
+              (SCREEN_HEIGHT - PAUSE_MENU_H) / 2,
+              PAUSE_MENU_W,
+              PAUSE_MENU_H,
+              loadTexture(ren, "menus/pause_menu.png")
+    );
+}
+
+void PauseMenu_main(PauseMenu* self, SDL_Renderer* ren) {
+    Rect_render(&self->menu, ren);
+}
+
+void PauseMenu_clean(PauseMenu* self) {
+    Rect_destroy(&self->menu);
 }

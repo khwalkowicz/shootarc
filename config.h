@@ -18,6 +18,9 @@ static uint  BG_TILES_Q = 24;
 static uint  BG_TILE_W = 120;
 static uint  BG_TILE_H = 180;
 
+static uint  PAUSE_MENU_W = 640;
+static uint  PAUSE_MENU_H = 360;
+
 static uint  PLAYER_W = 75;
 static uint  PLAYER_H = 75;
 static float PLAYER_VELOCITY_GOAL = 50;
