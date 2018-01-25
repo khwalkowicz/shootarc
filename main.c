@@ -5,6 +5,7 @@
 #include <SDL2/SDL_image.h>
 #include "config.h"
 #include "window.h"
+#include "engine.h"
 
 int main() {
 
@@ -49,63 +50,14 @@ int main() {
 
     /* OBJECT INITS */
 
-    MRectPtrArr fg;
-    MRectPtrArr_ctor(&fg);
-
     Background bg0;
     Background_ctor(&bg0, 0, ren);
     Background bg1;
     Background_ctor(&bg1, 1, ren);
 
-    Player player;
-    Player_ctor(&player, &fg, ren);
-
-    EnemyArr enemies;
-    EnemyArr_ctor(&enemies);
-
-    // WILL REMOVE THAT IN A BIT
-    Enemy_ctor(&enemies,  25,  980, 179, &fg, ren);
-    Enemy_ctor(&enemies,  28, 1046, 179, &fg, ren);
-    Enemy_ctor(&enemies,  31, 1112, 179, &fg, ren);
-    Enemy_ctor(&enemies,  34, 1178, 179, &fg, ren);
-    Enemy_ctor(&enemies,  37, 1244, 179, &fg, ren);
-    Enemy_ctor(&enemies,  41, 1310, 179, &fg, ren);
-    for(uint i = 0; i < enemies.idx; i++) {
-        Enemy_addPoint(&enemies.arr[i], 958, 179);
-        Enemy_addPoint(&enemies.arr[i], 937, 133);
-        Enemy_addPoint(&enemies.arr[i], 888,  95);
-        Enemy_addPoint(&enemies.arr[i], 829,  68);
-        Enemy_addPoint(&enemies.arr[i], 771,  49);
-        Enemy_addPoint(&enemies.arr[i], 710,  44);
-        Enemy_addPoint(&enemies.arr[i], 647,  22);
-        Enemy_addPoint(&enemies.arr[i], 527,  11);
-        Enemy_addPoint(&enemies.arr[i], 451,   9);
-        Enemy_addPoint(&enemies.arr[i], 394,   7);
-        Enemy_addPoint(&enemies.arr[i], 333,   6);
-        Enemy_addPoint(&enemies.arr[i], -88, 179);
-    }
-
-    Enemy_ctor(&enemies,  25,  980, 311, &fg, ren);
-    Enemy_ctor(&enemies,  28, 1046, 311, &fg, ren);
-    Enemy_ctor(&enemies,  31, 1112, 311, &fg, ren);
-    Enemy_ctor(&enemies,  34, 1178, 311, &fg, ren);
-    Enemy_ctor(&enemies,  37, 1244, 311, &fg, ren);
-    Enemy_ctor(&enemies,  41, 1310, 311, &fg, ren);
-    for(uint i = 6; i < enemies.idx; i++) {
-        Enemy_addPoint(&enemies.arr[i], 958, 311);
-        Enemy_addPoint(&enemies.arr[i], 937, 361);
-        Enemy_addPoint(&enemies.arr[i], 888, 398);
-        Enemy_addPoint(&enemies.arr[i], 829, 425);
-        Enemy_addPoint(&enemies.arr[i], 771, 444);
-        Enemy_addPoint(&enemies.arr[i], 710, 458);
-        Enemy_addPoint(&enemies.arr[i], 647, 470);
-        Enemy_addPoint(&enemies.arr[i], 527, 477);
-        Enemy_addPoint(&enemies.arr[i], 451, 486);
-        Enemy_addPoint(&enemies.arr[i], 394, 488);
-        Enemy_addPoint(&enemies.arr[i], 333, 489);
-        Enemy_addPoint(&enemies.arr[i], -88, 311);
-    }
-
+    // INIT GAME - Game_init(ren);
+    Game game;
+    Game_init(&game, ren);
 
     /* START THE TIMER */
     Timer timer;
@@ -129,9 +81,6 @@ int main() {
                     Timer_toggle(&timer);
         }
 
-        const uint8_t* keyStates = SDL_GetKeyboardState(NULL);
-        Win_controls(&player, &fg, &timer, ren, keyStates);
-
         SDL_RenderClear(ren);
 
         Background_render(&bg0, ren);
@@ -139,13 +88,9 @@ int main() {
         Background_render(&bg1, ren);
         Background_update(&bg1, timer.dt, ren);
 
-        Rect_render((Rect*)&player, ren);
-        Player_update(&player, timer.dt, &fg);
 
-        EnemyArr_update(&enemies, timer.dt, &fg);
-
-        MRectPtrArr_render(&fg, ren);
-        MRectPtrArr_update(&fg, timer.dt, &player, &enemies, ren);
+        // GAME MAIN LOGIC - Game_main()
+        Game_main(&game, &timer, ren);
 
         SDL_RenderPresent(ren);
     }
@@ -153,8 +98,9 @@ int main() {
 
     /* DESTROY MALLOCS, TEXTURES AND SDL */
 
-    Player_destroy(&player);
-    MRectPtrArr_destroy(&fg);
+    // GAME CLEANUP - Game_clean()
+    Game_clean(&game);
+
     Background_destroy(&bg0);
     Background_destroy(&bg1);
 
