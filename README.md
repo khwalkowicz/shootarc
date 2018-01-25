@@ -4,11 +4,13 @@
 #### Controls
 ##### Right-handed
 **Steering**: W A S D  
-**Shoot**: space
+**Shoot**: space  
+**Pause**: esc
 
 ##### Left-handed
 **Steering**: Arrow keys  
-**Shoot**: space
+**Shoot**: space  
+**Pause**: esc
 
 
 #### Copyrights

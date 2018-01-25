@@ -107,10 +107,9 @@ int main() {
     }
 
 
-    /* GET TIME DELTA */
-    float td;
-    uint  timeCurr = 0;
-    uint  timePrev = 0;
+    /* START THE TIMER */
+    Timer timer;
+    Timer_ctor(&timer);
 
 
     /* MAIN LOOP */
@@ -118,34 +117,35 @@ int main() {
     SDL_Event event;
     uint gameRunning = 1;
     while(gameRunning) {
-        timeCurr = SDL_GetTicks();
-        td = (float)(timeCurr - timePrev) / 100;
-        timePrev = timeCurr;
+        Timer_update(&timer);
 
-        showFPSinTitle(win, td);
+        showFPSinTitle(win, timer.dt);
 
         if(SDL_PollEvent(&event)) {
             if(event.type == SDL_QUIT)
                 gameRunning = 0;
+            if(event.type == SDL_KEYDOWN)
+                if(event.key.keysym.sym == SDLK_ESCAPE)
+                    Timer_toggle(&timer);
         }
 
         const uint8_t* keyStates = SDL_GetKeyboardState(NULL);
-        Win_controls(&player, &fg, ren, keyStates);
+        Win_controls(&player, &fg, &timer, ren, keyStates);
 
         SDL_RenderClear(ren);
 
         Background_render(&bg0, ren);
-        Background_update(&bg0, td, ren);
+        Background_update(&bg0, timer.dt, ren);
         Background_render(&bg1, ren);
-        Background_update(&bg1, td, ren);
+        Background_update(&bg1, timer.dt, ren);
 
         Rect_render((Rect*)&player, ren);
-        Player_update(&player, td, &fg);
+        Player_update(&player, timer.dt, &fg);
 
-        EnemyArr_update(&enemies, td, &fg);
+        EnemyArr_update(&enemies, timer.dt, &fg);
 
         MRectPtrArr_render(&fg, ren);
-        MRectPtrArr_update(&fg, td, &player, &enemies, ren);
+        MRectPtrArr_update(&fg, timer.dt, &player, &enemies, ren);
 
         SDL_RenderPresent(ren);
     }
