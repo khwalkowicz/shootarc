@@ -20,6 +20,7 @@ typedef struct MainMenu {
     Rect  startBtn;
     Rect  cursor;
     float cursorState;
+    Rect  copyright;
 } MainMenu;
 
 void MainMenu_init(MainMenu* self, SDL_Renderer* ren);

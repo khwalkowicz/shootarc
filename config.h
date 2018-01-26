@@ -24,6 +24,8 @@ static uint  MENU_BTN_W = 222;
 static uint  MENU_BTN_H = 40;
 static uint  MENU_CURSOR_W = 40;
 static uint  MENU_CURSOR_H = 35;
+static uint  MENU_COPYRIGHT_W = 286;
+static uint  MENU_COPYRIGHT_H = 9;
 
 static uint  PAUSE_MENU_W = 581;
 static uint  PAUSE_MENU_H = 457;

@@ -19,25 +19,28 @@ void MainMenu_init(MainMenu* self, SDL_Renderer* ren) {
     Rect_ctor(&self->logo, "logo",
               (SCREEN_WIDTH  - LOGO_W) / 2,
               (SCREEN_HEIGHT - LOGO_H) / 2 - 105,
-              LOGO_W,
-              LOGO_H,
+              LOGO_W, LOGO_H,
               loadTexture(ren, "menus/logo.png")
     );
     Rect_ctor(&self->startBtn, "button",
               (SCREEN_WIDTH  - MENU_BTN_W + MENU_CURSOR_W + 10) / 2,
               (SCREEN_HEIGHT - MENU_BTN_H) / 2 + 10,
-              MENU_BTN_W,
-              MENU_BTN_H,
+              MENU_BTN_W, MENU_BTN_H,
               loadTexture(ren, "menus/start_button.png")
     );
     Rect_ctor(&self->cursor, "menu-cursor",
               (SCREEN_WIDTH  - MENU_BTN_W - MENU_CURSOR_W - 10) / 2,
               (SCREEN_HEIGHT - MENU_BTN_H) / 2 + 10,
-              MENU_CURSOR_W,
-              MENU_CURSOR_H,
+              MENU_CURSOR_W, MENU_CURSOR_H,
               loadTexture(ren, "menus/cursor_animation.png")
     );
     self->cursorState = 0;
+    Rect_ctor(&self->copyright, "text",
+              (SCREEN_WIDTH  - MENU_COPYRIGHT_W) / 2,
+              SCREEN_HEIGHT - MENU_COPYRIGHT_H - 5,
+              MENU_COPYRIGHT_W, MENU_COPYRIGHT_H,
+              loadTexture(ren, "menus/copyright.png")
+    );
 }
 
 void MainMenu_main(MainMenu* self, Timer* timer, STATE* state,
@@ -53,6 +56,7 @@ void MainMenu_main(MainMenu* self, Timer* timer, STATE* state,
 
     Rect_render(&self->logo, ren);
     Rect_render(&self->startBtn, ren);
+    Rect_render(&self->copyright, ren);
 
     self->cursorState += timer->dt;
     if(self->cursorState >= 3)
