@@ -45,7 +45,7 @@ void MainMenu_main(MainMenu* self, Timer* timer, uint* viewing,
     if(SDL_PollEvent(&event)) {
         if(event.type == SDL_KEYDOWN) {
             if(event.key.keysym.sym == SDLK_SPACE ||
-                event.key.keysym.sym == SDLK_KP_ENTER)
+                event.key.keysym.sym == SDLK_RETURN)
                 *viewing = 2;
         } else
             SDL_PushEvent(&event);
