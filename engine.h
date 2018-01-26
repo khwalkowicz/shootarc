@@ -31,7 +31,9 @@ void MainMenu_clean(MainMenu* self);
 
 typedef struct Game {
     MRectPtrArr fg;
-    Player player;
+    Player   player;
+    uint     difficulty;
+    LifeBox  lifeBox;
     EnemyArr enemies;
 } Game;
 

@@ -7,12 +7,14 @@
 #include "config.h"
 
 
-void Player_ctor(Player* self, MRectPtrArr* fg, SDL_Renderer* ren) {
-    self->texUp   = loadTexture(ren, "player_up.png");
-    self->texNorm = loadTexture(ren, "player.png");
-    self->texDown = loadTexture(ren, "player_down.png");
+void Player_ctor(Player* self, uint lifes,
+                 MRectPtrArr* fg, SDL_Renderer* ren) {
+    self->texUp    = loadTexture(ren, "player_up.png");
+    self->texNorm  = loadTexture(ren, "player.png");
+    self->texDown  = loadTexture(ren, "player_down.png");
 
     self->cooldown = PLAYER_COOLDOWN;
+    self->lifes    = lifes;
 
     MRect_ctor(&self->super,
                "player",
@@ -124,4 +126,41 @@ void Player_destroy(Player* self) {
     SDL_DestroyTexture(self->texUp);
     SDL_DestroyTexture(self->texDown);
     SDL_DestroyTexture(self->texNorm);
+    free(self->shots.arr);
+}
+
+
+void LifeBox_ctor(LifeBox* self, Player* player, SDL_Renderer* ren) {
+    Rect_ctor(&self->super, "ui-box",
+        15, 15, PLAYER_LIFEBOX_W, PLAYER_LIFEBOX_H,
+        loadTexture(ren, "ui/box-life.png")
+    );
+    MRectArr_ctor(&self->lifes);
+    for(uint i = 0; i < player->lifes; i++) {
+        MRect obj;
+        MRect_ctor(&obj, "ui-life",
+            15 + 5 + 3 + i * PLAYER_LIFE_ICO_W + i * 5, 15 + 5 + 5,
+            PLAYER_LIFE_ICO_W, PLAYER_LIFE_ICO_H,
+            loadTexture(ren, "ui/life.png")
+        );
+        MRectArr_add(&self->lifes, obj);
+    }
+}
+
+void LifeBox_update(LifeBox* self, Player* player) {
+    for(uint i = self->lifes.idx; i > player->lifes; i--)
+        SDL_SetTextureAlphaMod(self->lifes.arr[i].super.tex, 85);
+}
+
+void LifeBox_render(LifeBox* self, SDL_Renderer* ren) {
+    Rect_render(&self->super, ren);
+    for(uint i = 0; i < self->lifes.idx; i++)
+        Rect_render((Rect*)&self->lifes.arr[i], ren);
+}
+
+void LifeBox_destroy(LifeBox* self) {
+    for(uint i = 0; i < self->lifes.idx; i++)
+        SDL_DestroyTexture(self->lifes.arr[i].super.tex);
+    free(self->lifes.arr);
+    SDL_DestroyTexture(self->super.tex);
 }

@@ -123,6 +123,7 @@ typedef struct Player {
     SDL_Texture* texUp;
     SDL_Texture* texNorm;
     SDL_Texture* texDown;
+    uint lifes;
     float cooldown;
     MRectArr shots;
 } Player;
@@ -133,13 +134,25 @@ int MRect_update(MRect* self, float td, uint checkCollision, Player* player,
 void MRectPtrArr_update(MRectPtrArr* self, float td, Player* player,
                         EnemyArr* enemies, SDL_Renderer* ren);
 
-void Player_ctor(Player* self, MRectPtrArr* fg, SDL_Renderer* ren);
+void Player_ctor(Player* self, uint lifes,
+                 MRectPtrArr* fg, SDL_Renderer* ren);
 void Player_move(Player* self, const uint8_t* keyStates);
 void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren);
 void Player_update(Player* self, float td, MRectPtrArr* fg);
 void Player_handleShot(Player* self, MRectPtrArr* fg,
                        MRect* obj, MRect* coll);
 void Player_destroy(Player* self);
+
+
+typedef struct LifeBox {
+    Rect super;
+    MRectArr lifes;
+} LifeBox;
+
+void LifeBox_ctor(LifeBox* self, Player* player, SDL_Renderer* ren);
+void LifeBox_update(LifeBox* self, Player* player);
+void LifeBox_render(LifeBox* self, SDL_Renderer* ren);
+void LifeBox_destroy(LifeBox* self);
 
 
 typedef struct Background {

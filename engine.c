@@ -82,9 +82,12 @@ void MainMenu_clean(MainMenu* self) {
 
 
 void Game_init(Game* self, SDL_Renderer* ren) {
+    self->difficulty = PLAYER_LIFES_EASY;
+
     MRectPtrArr_ctor(&self->fg);
 
-    Player_ctor(&self->player, &self->fg, ren);
+    Player_ctor(&self->player, self->difficulty, &self->fg, ren);
+    LifeBox_ctor(&self->lifeBox, &self->player, ren);
 
     EnemyArr_ctor(&self->enemies);
 
@@ -149,6 +152,9 @@ void Game_main(Game* self, Timer* timer, STATE* state,
     Rect_render((Rect*)&self->player, ren);
     Player_update(&self->player, timer->dt, &self->fg);
 
+    LifeBox_update(&self->lifeBox, &self->player);
+    LifeBox_render(&self->lifeBox, ren);
+
     EnemyArr_update(&self->enemies, timer->dt, &self->fg);
 
     MRectPtrArr_render(&self->fg, ren);
@@ -158,6 +164,7 @@ void Game_main(Game* self, Timer* timer, STATE* state,
 
 void Game_clean(Game* self) {
     Player_destroy(&self->player);
+    LifeBox_destroy(&self->lifeBox);
     MRectPtrArr_destroy(&self->fg);
 }
 
