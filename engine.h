@@ -8,6 +8,20 @@
 #include "classes.h"
 #include "window.h"
 
+
+typedef struct MainMenu {
+    Rect  logo;
+    Rect  startBtn;
+    Rect  cursor;
+    float cursorState;
+} MainMenu;
+
+void MainMenu_init(MainMenu* self, SDL_Renderer* ren);
+void MainMenu_main(MainMenu* self, Timer* timer, uint* viewing,
+                   SDL_Event event, SDL_Renderer* ren);
+void MainMenu_clean(MainMenu* self);
+
+
 typedef struct Game {
     MRectPtrArr fg;
     Player player;
@@ -15,7 +29,8 @@ typedef struct Game {
 } Game;
 
 void Game_init(Game* self, SDL_Renderer* ren);
-void Game_main(Game* self, Timer* timer, SDL_Renderer* ren);
+void Game_main(Game* self, Timer* timer, uint* viewing,
+               SDL_Event event, SDL_Renderer* ren);
 void Game_clean(Game* self);
 
 

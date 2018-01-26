@@ -18,6 +18,13 @@ static uint  BG_TILES_Q = 24;
 static uint  BG_TILE_W = 120;
 static uint  BG_TILE_H = 180;
 
+static uint  LOGO_W = 334;
+static uint  LOGO_H = 90;
+static uint  MENU_BTN_W = 222;
+static uint  MENU_BTN_H = 40;
+static uint  MENU_CURSOR_W = 40;
+static uint  MENU_CURSOR_H = 35;
+
 static uint  PAUSE_MENU_W = 640;
 static uint  PAUSE_MENU_H = 360;
 

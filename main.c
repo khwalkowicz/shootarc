@@ -8,14 +8,6 @@
 #include "engine.h"
 
 
-void pauseGame(Timer* timer, uint* viewing) {
-    Timer_toggle(timer);
-    if(*viewing == 1)
-        *viewing = 2;
-    else
-        *viewing = 1;
-}
-
 int main() {
 
     srand((uint)time(NULL));
@@ -64,13 +56,18 @@ int main() {
     Background bg1;
     Background_ctor(&bg1, 1, ren);
 
-    /* INIT GAME LOGIC */
+
+    /* INIT SCENES / STATES */
+
+    MainMenu mainmenu;
+    MainMenu_init(&mainmenu, ren);
+
     Game game;
     Game_init(&game, ren);
 
-    /* INIT PAUSE MENU */
     PauseMenu pausemenu;
     PauseMenu_init(&pausemenu, ren);
+
 
     /* START THE TIMER */
     Timer timer;
@@ -88,14 +85,6 @@ int main() {
 
         showFPSinTitle(win, timer.dt);
 
-        if(SDL_PollEvent(&event)) {
-            if(event.type == SDL_QUIT)
-                gameRunning = 0;
-            if(event.type == SDL_KEYDOWN)
-                if(event.key.keysym.sym == SDLK_ESCAPE)
-                    pauseGame(&timer, &viewing);
-        }
-
         SDL_RenderClear(ren);
 
         Background_render(&bg0, ren);
@@ -104,12 +93,19 @@ int main() {
         Background_update(&bg1, timer.dt, ren);
 
 
-        // GAME MAIN LOGIC
-        Game_main(&game, &timer, ren);
+        if(viewing == 1)
+            MainMenu_main(&mainmenu, &timer, &viewing, event, ren);
 
-        // If pause was pressed
-        if(viewing == 2)
+        if(viewing == 2 || viewing == 3)
+            Game_main(&game, &timer, &viewing, event, ren);
+
+        if(viewing == 3)
             PauseMenu_main(&pausemenu, ren);
+
+
+        if(SDL_PollEvent(&event))
+            if(event.type == SDL_QUIT)
+                gameRunning = 0;
 
         SDL_RenderPresent(ren);
     }
@@ -119,6 +115,7 @@ int main() {
 
     PauseMenu_clean(&pausemenu);
     Game_clean(&game);
+    MainMenu_clean(&mainmenu);
 
     Background_destroy(&bg0);
     Background_destroy(&bg1);
