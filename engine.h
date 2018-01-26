@@ -9,6 +9,12 @@
 #include "window.h"
 
 
+typedef unsigned int STATE;
+static STATE STATE_MAINMENU  = 1;
+static STATE STATE_GAME      = 2;
+static STATE STATE_PAUSEMENU = 3;
+
+
 typedef struct MainMenu {
     Rect  logo;
     Rect  startBtn;
@@ -17,7 +23,7 @@ typedef struct MainMenu {
 } MainMenu;
 
 void MainMenu_init(MainMenu* self, SDL_Renderer* ren);
-void MainMenu_main(MainMenu* self, Timer* timer, uint* viewing,
+void MainMenu_main(MainMenu* self, Timer* timer, STATE* state,
                    SDL_Event event, SDL_Renderer* ren);
 void MainMenu_clean(MainMenu* self);
 
@@ -29,7 +35,7 @@ typedef struct Game {
 } Game;
 
 void Game_init(Game* self, SDL_Renderer* ren);
-void Game_main(Game* self, Timer* timer, uint* viewing,
+void Game_main(Game* self, Timer* timer, STATE* state,
                SDL_Event event, SDL_Renderer* ren);
 void Game_clean(Game* self);
 

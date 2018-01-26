@@ -78,7 +78,7 @@ int main() {
 
     SDL_Event event;
     uint gameRunning = 1;
-    uint viewing = 1;
+    STATE state = STATE_MAINMENU;
 
     while(gameRunning) {
         Timer_update(&timer);
@@ -93,13 +93,13 @@ int main() {
         Background_update(&bg1, timer.dt, ren);
 
 
-        if(viewing == 1)
-            MainMenu_main(&mainmenu, &timer, &viewing, event, ren);
+        if(state == STATE_MAINMENU)
+            MainMenu_main(&mainmenu, &timer, &state, event, ren);
 
-        if(viewing == 2 || viewing == 3)
-            Game_main(&game, &timer, &viewing, event, ren);
+        if(state == STATE_GAME || state == STATE_PAUSEMENU)
+            Game_main(&game, &timer, &state, event, ren);
 
-        if(viewing == 3)
+        if(state == STATE_PAUSEMENU)
             PauseMenu_main(&pausemenu, ren);
 
 

@@ -6,12 +6,12 @@
 #include "config.h"
 
 
-void pauseGame(Timer* timer, uint* viewing) {
+void pauseToggle(Timer* timer, STATE* state) {
     Timer_toggle(timer);
-    if(*viewing == 2)
-        *viewing = 3;
-    else if(*viewing == 3)
-        *viewing = 2;
+    if(*state == STATE_GAME)
+        *state = STATE_PAUSEMENU;
+    else if(*state == STATE_PAUSEMENU)
+        *state = STATE_GAME;
 }
 
 
@@ -40,13 +40,13 @@ void MainMenu_init(MainMenu* self, SDL_Renderer* ren) {
     self->cursorState = 0;
 }
 
-void MainMenu_main(MainMenu* self, Timer* timer, uint* viewing,
+void MainMenu_main(MainMenu* self, Timer* timer, STATE* state,
                    SDL_Event event, SDL_Renderer* ren) {
     if(SDL_PollEvent(&event)) {
         if(event.type == SDL_KEYDOWN) {
             if(event.key.keysym.sym == SDLK_SPACE ||
                 event.key.keysym.sym == SDLK_RETURN)
-                *viewing = 2;
+                *state = STATE_GAME;
         } else
             SDL_PushEvent(&event);
     }
@@ -128,12 +128,12 @@ void Game_init(Game* self, SDL_Renderer* ren) {
     }
 }
 
-void Game_main(Game* self, Timer* timer, uint* viewing,
+void Game_main(Game* self, Timer* timer, STATE* state,
                SDL_Event event, SDL_Renderer* ren) {
     if(SDL_PollEvent(&event)) {
         if(event.type == SDL_KEYDOWN) {
             if(event.key.keysym.sym == SDLK_ESCAPE)
-                pauseGame(timer, viewing);
+                pauseToggle(timer, state);
          }
         else
             SDL_PushEvent(&event);
