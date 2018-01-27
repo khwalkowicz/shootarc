@@ -98,6 +98,8 @@ uint Enemy_update(Enemy* self, float td, EnemyArr* enemies, MRectPtrArr* fg) {
 
 void Enemy_explode(Enemy* self, EnemyArr* enemies,
                    MRectPtrArr* fg, SDL_Renderer* ren) {
+    self->super.vectors.velocityGoal.x = 0;
+    self->super.vectors.velocityGoal.y = 0;
     SDL_Rect clip = {
             (self->super.super.explosionState % 5) * ENEMY_EXPLOSION_TILE_W,
             (self->super.super.explosionState / 5) * ENEMY_EXPLOSION_TILE_H,

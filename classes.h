@@ -138,9 +138,10 @@ void Player_ctor(Player* self, uint lifes,
                  MRectPtrArr* fg, SDL_Renderer* ren);
 void Player_move(Player* self, const uint8_t* keyStates);
 void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren);
-void Player_update(Player* self, float td, MRectPtrArr* fg);
+void Player_update(Player* self, float td);
 void Player_handleShot(Player* self, MRectPtrArr* fg,
                        MRect* obj, MRect* coll);
+void Player_hit(Player* self);
 void Player_destroy(Player* self);
 
 

@@ -95,8 +95,7 @@ void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren) {
     }
 }
 
-void Player_update(Player* self, float td, MRectPtrArr* fg) {
-    MRect_update((MRect*)self, td, 1, self, NULL, fg, NULL);
+void Player_update(Player* self, float td) {
     if(self->cooldown > 0)
         self->cooldown -= td;
 }
@@ -120,6 +119,11 @@ void Player_handleShot(Player* self, MRectPtrArr* fg,
     MRectPtrArr_del(fg, obj);
 
     MRectArr_del(&self->shots, (uint)id);
+}
+
+void Player_hit(Player* self) {
+    self->lifes--;
+    // EXPLOSION ANIMATION LATER ON
 }
 
 void Player_destroy(Player* self) {
@@ -148,7 +152,7 @@ void LifeBox_ctor(LifeBox* self, Player* player, SDL_Renderer* ren) {
 }
 
 void LifeBox_update(LifeBox* self, Player* player) {
-    for(uint i = self->lifes.idx; i > player->lifes; i--)
+    for(uint i = self->lifes.idx - 1; i >= player->lifes; i--)
         SDL_SetTextureAlphaMod(self->lifes.arr[i].super.tex, 85);
 }
 

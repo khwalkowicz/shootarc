@@ -1,16 +1,12 @@
-## shootarc-0.1
+## arcshoot-0.2
 ### Arcade space-shooter written in C and SDL2
   
 #### Controls
 ##### Right-handed
-**Steering**: W A S D  
+**Menu movement**: arrow keys to select, enter or space to accept  
+**Steering**: W A S D **or** arrow keys  
 **Shoot**: space  
-**Pause**: esc
-
-##### Left-handed
-**Steering**: Arrow keys  
-**Shoot**: space  
-**Pause**: esc
+**Pause**: esc  
 
 
 #### Copyrights

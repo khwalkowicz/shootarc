@@ -72,6 +72,202 @@ void MRect_ctor(MRect* self, char* type, float x, float y,
     Movable_ctor(&self->vectors, 0, 0, 0, 0);
 }
 
+uint MRect_handleCollisionX(MRect* self, MRect* coll, float prev,
+                            Player* player, EnemyArr* enemies,
+                            MRectPtrArr* fg, SDL_Renderer* ren) {
+    if(!strcmp(self->super.type, "player")) {
+        if(Rect_checkWallsX((Rect*)self)) {
+            self->super.super.x = prev;
+            return 0;
+        }
+        if(coll != NULL) {
+            if(!strcmp(coll->super.type, "enemy") &&
+                    !coll->super.explosionState) {
+                Enemy_explode((Enemy*)coll, enemies, fg, ren);
+                Player_hit(player);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "rock") &&
+                    !coll->super.explosionState) {
+                // Rock_explode() - will add later
+                Player_hit(player);
+                return 1;
+            }
+        }
+        return 0;
+    }
+    if(!strcmp(self->super.type, "player_shot")) {
+        if(Rect_checkWallsX((Rect*)self)) {
+            Player_handleShot(player, fg, self, coll);
+            return 1;
+        }
+        if(coll != NULL) {
+            if(!strcmp(coll->super.type, "enemy")) {
+                Player_handleShot(player, fg, self, coll);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "rock")) {
+                Player_handleShot(player, fg, self, coll);
+                return 1;
+            }
+        }
+    }
+    if(!strcmp(self->super.type, "enemy")) {
+        if(coll != NULL) {
+            if(!strcmp(coll->super.type, "player") &&
+                    !self->super.explosionState) {
+                Enemy_explode((Enemy*)self, enemies, fg, ren);
+                Player_hit(player);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "player_shot")) {
+                Player_handleShot(player, fg, coll, self);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "enemy")) {
+                self->super.super.x = prev;
+                return 0;
+            }
+            if(!strcmp(coll->super.type, "rock") &&
+                    !coll->super.explosionState &&
+                    !self->super.explosionState) {
+                // Rock_explode() - will add later
+                Enemy_explode((Enemy*)self, enemies, fg, ren);
+                return 1;
+            }
+        }
+        return 0;
+    }
+    if(!strcmp(self->super.type, "rock")) {
+        if(coll != NULL) {
+            if(!strcmp(coll->super.type, "player") &&
+                    !self->super.explosionState) {
+                // Rock_explode() - will add later
+                Player_hit(player);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "player_shot")) {
+                Player_handleShot(player, fg, coll, self);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "enemy") &&
+                    !self->super.explosionState &&
+                    !coll->super.explosionState) {
+                // Rock_explode() - will add later
+                Enemy_explode((Enemy*)coll, enemies, fg, ren);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "rock") &&
+                    !self->super.explosionState &&
+                    !coll->super.explosionState) {
+                // Rock_explode( self ) - will add later
+                // Rock_explode( coll ) - will add later
+                return 1;
+            }
+        }
+        return 0;
+    }
+    return 0;
+}
+
+uint MRect_handleCollisionY(MRect* self, MRect* coll, float prev,
+                            Player* player, EnemyArr* enemies,
+                            MRectPtrArr* fg, SDL_Renderer* ren) {
+    if(!strcmp(self->super.type, "player")) {
+        if(Rect_checkWallsY((Rect*)self)) {
+            self->super.super.y = prev;
+            return 0;
+        }
+        if(coll != NULL) {
+            if(!strcmp(coll->super.type, "enemy") &&
+               !coll->super.explosionState) {
+                Enemy_explode((Enemy*)coll, enemies, fg, ren);
+                Player_hit(player);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "rock") &&
+               !coll->super.explosionState) {
+                // Rock_explode() - will add later
+                Player_hit(player);
+                return 1;
+            }
+        }
+        return 0;
+    }
+    if(!strcmp(self->super.type, "player_shot")) {
+        if(Rect_checkWallsY((Rect*)self)) {
+            Player_handleShot(player, fg, self, coll);
+            return 1;
+        }
+        if(coll != NULL) {
+            if(!strcmp(coll->super.type, "enemy")) {
+                Player_handleShot(player, fg, self, coll);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "rock")) {
+                Player_handleShot(player, fg, self, coll);
+                return 1;
+            }
+        }
+    }
+    if(!strcmp(self->super.type, "enemy")) {
+        if(coll != NULL) {
+            if(!strcmp(coll->super.type, "player") &&
+               !self->super.explosionState) {
+                Enemy_explode((Enemy*)self, enemies, fg, ren);
+                Player_hit(player);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "player_shot")) {
+                Player_handleShot(player, fg, coll, self);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "enemy")) {
+                self->super.super.y = prev;
+                return 0;
+            }
+            if(!strcmp(coll->super.type, "rock") &&
+               !coll->super.explosionState &&
+               !self->super.explosionState) {
+                // Rock_explode() - will add later
+                Enemy_explode((Enemy*)self, enemies, fg, ren);
+                return 1;
+            }
+        }
+        return 0;
+    }
+    if(!strcmp(self->super.type, "rock")) {
+        if(coll != NULL) {
+            if(!strcmp(coll->super.type, "player") &&
+               !self->super.explosionState) {
+                // Rock_explode() - will add later
+                Player_hit(player);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "player_shot")) {
+                Player_handleShot(player, fg, coll, self);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "enemy") &&
+               !self->super.explosionState &&
+               !coll->super.explosionState) {
+                // Rock_explode() - will add later
+                Enemy_explode((Enemy*)coll, enemies, fg, ren);
+                return 1;
+            }
+            if(!strcmp(coll->super.type, "rock") &&
+               !self->super.explosionState &&
+               !coll->super.explosionState) {
+                // Rock_explode( self ) - will add later
+                // Rock_explode( coll ) - will add later
+                return 1;
+            }
+        }
+        return 0;
+    }
+    return 0;
+}
+
 int MRect_update(MRect* self, float td, uint checkCollision, Player* player,
                  EnemyArr* enemies, MRectPtrArr* fg, SDL_Renderer* ren) {
     Movable_update(&self->vectors, td);
@@ -81,30 +277,19 @@ int MRect_update(MRect* self, float td, uint checkCollision, Player* player,
 
     self->super.super.x += self->vectors.velocity.x * td;
 
+    uint wasErased = 0;
+
     if(checkCollision) {
         MRect* coll = MRectPtrArr_checkCollision(fg, self);
-        if(coll != NULL || ( strcmp(self->super.type, "enemy") != 0 &&
-                             Rect_checkWallsX((Rect*)self) )) {
-            self->super.super.x = prevX;
-            if( !strcmp(self->super.type, "player_shot") ) {
-                Player_handleShot(player, fg, self, coll);
-                return 0;
-            }
-        }
+        wasErased = MRect_handleCollisionX(self, coll, prevX, player, enemies,
+                                           fg, ren);
     }
 
     self->super.super.y += self->vectors.velocity.y * td;
 
-    if(checkCollision) {
+    if(checkCollision && !wasErased) {
         MRect* coll = MRectPtrArr_checkCollision(fg, self);
-        if(coll != NULL || ( strcmp(self->super.type, "enemy") != 0 &&
-                             Rect_checkWallsY((Rect*)self) )) {
-            self->super.super.y = prevY;
-            if( !strcmp(self->super.type, "player_shot") ) {
-                Player_handleShot(player, fg, self, coll);
-                return 0;
-            }
-        }
+        MRect_handleCollisionY(self, coll, prevY, player, enemies, fg, ren);
     }
 
     if(enemies != NULL && self->super.explosionState)
@@ -244,15 +429,15 @@ void MRectPtrArr_render(MRectPtrArr* self, SDL_Renderer* ren) {
 void MRectPtrArr_update(MRectPtrArr* self, float td, Player* player,
                         EnemyArr* enemies, SDL_Renderer* ren) {
     for(uint i = 0; i < self->idx; i++)
-        if( !strcmp(self->arr[i]->super.type, "player_shot") ||
-            !strcmp(self->arr[i]->super.type, "enemy") )
-            MRect_update(self->arr[i], td, 1, player, enemies, self, ren);
+        MRect_update(self->arr[i], td, 1, player, enemies, self, ren);
 }
 
 void MRectPtrArr_destroy(MRectPtrArr* self) {
-    for(uint i = 0; i < self->idx; i++)
-        if( strcmp(self->arr[i]->super.type, "player") != 0)
+    for(uint i = 0; i < self->idx; i++) {
+        MRect* obj = self->arr[i];
+        if(strcmp(self->arr[i]->super.type, "player") != 0)
             Rect_destroy((Rect*)self->arr[i]);
+    }
     free(self->arr);
 }
 

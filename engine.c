@@ -150,7 +150,13 @@ void Game_main(Game* self, Timer* timer, STATE* state,
     Win_controls(&self->player, &self->fg, timer, ren, keyStates);
 
     Rect_render((Rect*)&self->player, ren);
-    Player_update(&self->player, timer->dt, &self->fg);
+    Player_update(&self->player, timer->dt);
+
+    if(!self->player.lifes) {
+        *state = STATE_MAINMENU;
+        Game_clean(self);
+        Game_init(self, ren);
+    }
 
     LifeBox_update(&self->lifeBox, &self->player);
     LifeBox_render(&self->lifeBox, ren);
@@ -163,9 +169,9 @@ void Game_main(Game* self, Timer* timer, STATE* state,
 }
 
 void Game_clean(Game* self) {
-    Player_destroy(&self->player);
-    LifeBox_destroy(&self->lifeBox);
     MRectPtrArr_destroy(&self->fg);
+    LifeBox_destroy(&self->lifeBox);
+    Player_destroy(&self->player);
 }
 
 
