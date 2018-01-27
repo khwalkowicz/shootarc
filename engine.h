@@ -13,6 +13,7 @@ typedef unsigned int STATE;
 static STATE STATE_MAINMENU  = 1;
 static STATE STATE_GAME      = 2;
 static STATE STATE_PAUSEMENU = 3;
+static STATE STATE_GAMEOVER  = 4;
 
 
 typedef struct MainMenu {
@@ -36,6 +37,7 @@ typedef struct Game {
     LifeBox  lifeBox;
     EnemyArr enemies;
     uint     gameStopped;
+    uint     initialized;
 } Game;
 
 void Game_init(Game* self, SDL_Renderer* ren);
@@ -51,5 +53,20 @@ typedef struct PauseMenu {
 void PauseMenu_init(PauseMenu* self, SDL_Renderer* ren);
 void PauseMenu_main(PauseMenu* self, SDL_Renderer* ren);
 void PauseMenu_clean(PauseMenu* self);
+
+
+typedef struct GameOverScreen {
+    Rect  bg;
+    Rect  text;
+    float opacity;
+    float freeze;
+    uint  initialized;
+} GameOverScreen;
+
+void GameOverScreen_init(GameOverScreen* self, SDL_Renderer* ren);
+void GameOverScreen_main(GameOverScreen* self, Timer* timer,
+                         STATE* state, SDL_Renderer* ren);
+void GameOverScreen_clean(GameOverScreen* self);
+
 
 #endif //ARCSHOOT_ENGINE_H

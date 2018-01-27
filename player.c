@@ -127,7 +127,7 @@ void Player_update(Player* self, float td, uint* gameStopped,
             MRectPtrArr_del(fg, (MRect*)self);
         }
 
-        self->super.super.explosionState += td / 2;
+        self->super.super.explosionState += td / 2.25;
     }
 
     if(self->cooldown > 0)

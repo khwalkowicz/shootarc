@@ -84,6 +84,7 @@ void MainMenu_clean(MainMenu* self) {
 void Game_init(Game* self, SDL_Renderer* ren) {
     self->difficulty = PLAYER_LIFES_NORMAL;
     self->gameStopped = 0;
+    self->initialized = 1;
 
     MRectPtrArr_ctor(&self->fg);
 
@@ -138,6 +139,9 @@ void Game_init(Game* self, SDL_Renderer* ren) {
 
 void Game_main(Game* self, Timer* timer, STATE* state,
                SDL_Event event, SDL_Renderer* ren) {
+    if(!self->initialized)
+        Game_init(self, ren);
+
     if(!self->gameStopped) {
         if(SDL_PollEvent(&event)) {
             if(event.type == SDL_KEYDOWN) {
@@ -152,22 +156,18 @@ void Game_main(Game* self, Timer* timer, STATE* state,
         Win_controls(&self->player, &self->fg, timer, ren, keyStates);
 
         LifeBox_update(&self->lifeBox, &self->player);
-
         EnemyArr_update(&self->enemies, timer->dt, &self->fg);
-
         MRectPtrArr_update(&self->fg, timer->dt, &self->player,
                            &self->enemies, ren);
     }
 
     Rect_render((Rect*)&self->player, ren);
-
     Player_update(&self->player, timer->dt, &self->gameStopped,
                   ren, &self->fg);
 
-    if((int)self->player.super.super.explosionState == 16) {
-        *state = STATE_MAINMENU;
+    if( (int)self->player.super.super.explosionState == 16 ) {
+        *state = STATE_GAMEOVER;
         Game_clean(self);
-        Game_init(self, ren);
     }
 
     LifeBox_render(&self->lifeBox, ren);
@@ -179,6 +179,7 @@ void Game_clean(Game* self) {
     MRectPtrArr_destroy(&self->fg);
     LifeBox_destroy(&self->lifeBox);
     Player_destroy(&self->player);
+    self->initialized = 0;
 }
 
 
@@ -198,4 +199,58 @@ void PauseMenu_main(PauseMenu* self, SDL_Renderer* ren) {
 
 void PauseMenu_clean(PauseMenu* self) {
     Rect_destroy(&self->menu);
+}
+
+
+void GameOverScreen_init(GameOverScreen* self, SDL_Renderer* ren) {
+    SDL_Rect bg = { 0, 0, SCREEN_WIDTH, SCREEN_WIDTH };
+    SDL_Texture* black = SDL_CreateTexture(ren,
+                                           SDL_PIXELFORMAT_RGBA8888,
+                                           SDL_TEXTUREACCESS_TARGET,
+                                           SCREEN_WIDTH, SCREEN_HEIGHT);
+    SDL_SetRenderTarget(ren, black);
+    SDL_RenderDrawRect(ren, &bg);
+    SDL_RenderFillRect(ren, &bg);
+    SDL_SetRenderTarget(ren, NULL);
+
+    Rect_ctor(&self->bg, "menu", 0, 0, SCREEN_WIDTH, SCREEN_WIDTH, black);
+
+    Rect_ctor(&self->text, "text",
+              (SCREEN_WIDTH - GAMEOVER_TEXT_W) / 2,
+              (SCREEN_HEIGHT - GAMEOVER_TEXT_H) / 2,
+              GAMEOVER_TEXT_W, GAMEOVER_TEXT_H,
+              loadTexture(ren, "menus/gameover.png")
+    );
+
+    self->opacity     = 25;
+    self->freeze      = 25;
+    self->initialized = 1;
+}
+
+void GameOverScreen_main(GameOverScreen* self, Timer* timer,
+                         STATE* state, SDL_Renderer* ren) {
+    if(!self->initialized)
+        GameOverScreen_init(self, ren);
+
+    self->opacity = approach(255, self->opacity, timer->dt * 10);
+
+    SDL_SetTextureAlphaMod(self->bg.tex,   (Uint8)self->opacity);
+    SDL_SetTextureAlphaMod(self->text.tex, (Uint8)self->opacity);
+
+    Rect_render(&self->bg, ren);
+    Rect_render(&self->text, ren);
+
+    if(self->opacity == 255)
+        self->freeze -= timer->dt;
+
+    if(self->freeze <= 0) {
+        *state = STATE_MAINMENU;
+        GameOverScreen_clean(self);
+    }
+}
+
+void GameOverScreen_clean(GameOverScreen* self) {
+    Rect_destroy(&self->bg);
+    Rect_destroy(&self->text);
+    self->initialized = 0;
 }

@@ -46,7 +46,6 @@ int main() {
         SDL_Quit();
         return 1;
     }
-    SDL_SetRenderDrawColor(ren, 20, 14, 35, 1);
 
 
     /* OBJECT INITS */
@@ -68,6 +67,9 @@ int main() {
     PauseMenu pausemenu;
     PauseMenu_init(&pausemenu, ren);
 
+    GameOverScreen gameoverscreen;
+    GameOverScreen_init(&gameoverscreen, ren);
+
 
     /* START THE TIMER */
     Timer timer;
@@ -81,6 +83,8 @@ int main() {
     STATE state = STATE_MAINMENU;
 
     while(gameRunning) {
+        SDL_SetRenderDrawColor(ren, 20, 14, 35, 1);
+
         Timer_update(&timer);
 
         showFPSinTitle(win, timer.dt);
@@ -96,12 +100,15 @@ int main() {
         if(state == STATE_MAINMENU)
             MainMenu_main(&mainmenu, &timer, &state, event, ren);
 
-        if(state == STATE_GAME || state == STATE_PAUSEMENU)
+        if(state == STATE_GAME ||
+           state == STATE_PAUSEMENU)
             Game_main(&game, &timer, &state, event, ren);
 
         if(state == STATE_PAUSEMENU)
             PauseMenu_main(&pausemenu, ren);
 
+        if(state == STATE_GAMEOVER)
+            GameOverScreen_main(&gameoverscreen, &timer, &state, ren);
 
         if(SDL_PollEvent(&event))
             if(event.type == SDL_QUIT)
@@ -114,7 +121,10 @@ int main() {
     /* DESTROY MALLOCS, TEXTURES AND SDL */
 
     PauseMenu_clean(&pausemenu);
-    Game_clean(&game);
+    if(game.initialized)
+        Game_clean(&game);
+    if(gameoverscreen.initialized)
+        GameOverScreen_clean(&gameoverscreen);
     MainMenu_clean(&mainmenu);
 
     Background_destroy(&bg0);
