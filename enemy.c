@@ -101,9 +101,9 @@ void Enemy_explode(Enemy* self, EnemyArr* enemies,
     self->super.vectors.velocityGoal.x = 0;
     self->super.vectors.velocityGoal.y = 0;
     SDL_Rect clip = {
-            (self->super.super.explosionState % 5) * ENEMY_EXPLOSION_TILE_W,
-            (self->super.super.explosionState / 5) * ENEMY_EXPLOSION_TILE_H,
-            ENEMY_EXPLOSION_TILE_W, ENEMY_EXPLOSION_TILE_H
+        ((int)self->super.super.explosionState % 5) * ENEMY_EXPLOSION_TILE_W,
+        ((int)self->super.super.explosionState / 5) * ENEMY_EXPLOSION_TILE_H,
+        ENEMY_EXPLOSION_TILE_W, ENEMY_EXPLOSION_TILE_H
     };
     renderTexture(self->super.super.explosionTex, ren,
                   (int)self->super.super.super.x -

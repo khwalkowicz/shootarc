@@ -10,17 +10,6 @@
 #include "classes.h"
 
 
-typedef struct Timer {
-    uint  ticksPrev;
-    uint  ticksCurr;
-    uint  isPaused;
-    float dt;
-} Timer;
-
-void Timer_ctor(Timer* timer);
-void Timer_update(Timer* timer);
-void Timer_toggle(Timer* timer);
-
 char* getAssetPath(char* str);
 
 void SDLError_log(FILE* stream, char* msg);

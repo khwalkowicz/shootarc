@@ -35,6 +35,7 @@ typedef struct Game {
     uint     difficulty;
     LifeBox  lifeBox;
     EnemyArr enemies;
+    uint     gameStopped;
 } Game;
 
 void Game_init(Game* self, SDL_Renderer* ren);

@@ -8,6 +8,18 @@
 #include <SDL2/SDL.h>
 
 
+typedef struct Timer {
+    uint  ticksPrev;
+    uint  ticksCurr;
+    uint  isPaused;
+    float dt;
+} Timer;
+
+void Timer_ctor(Timer* timer);
+void Timer_update(Timer* timer);
+void Timer_toggle(Timer* timer);
+
+
 typedef struct Shape {
     float x;
     float y;
@@ -39,7 +51,7 @@ typedef struct Rect {
     char* type;
     float width;
     float height;
-    uint explosionState;
+    float explosionState;
     SDL_Texture* tex;
     SDL_Texture* explosionTex;
 } Rect;
@@ -138,7 +150,8 @@ void Player_ctor(Player* self, uint lifes,
                  MRectPtrArr* fg, SDL_Renderer* ren);
 void Player_move(Player* self, const uint8_t* keyStates);
 void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren);
-void Player_update(Player* self, float td);
+void Player_update(Player* self, float td, uint* gameStopped,
+                   SDL_Renderer* ren, MRectPtrArr* fg);
 void Player_handleShot(Player* self, MRectPtrArr* fg,
                        MRect* obj, MRect* coll);
 void Player_hit(Player* self);

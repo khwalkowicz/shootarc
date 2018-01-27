@@ -363,14 +363,16 @@ uint MRectPtrArr_add(MRectPtrArr* self, MRect* rectPtr) {
 }
 
 void MRectPtrArr_del(MRectPtrArr* self, MRect* rectPtr) {
-    uint i = 0;
-    for(; i < self->idx; i++)
-        if(self->arr[i] == rectPtr)
-            break;
-    if(i != self->idx + 1) {
-        for(; i < self->idx - 1; i++)
-            self->arr[i] = self->arr[i + 1];
-        self->idx--;
+    if(self->idx) {
+        uint i = 0;
+        for (; i < self->idx; i++)
+            if (self->arr[i] == rectPtr)
+                break;
+        if (i != self->idx + 1) {
+            for (; i < self->idx - 1; i++)
+                self->arr[i] = self->arr[i + 1];
+            self->idx--;
+        }
     }
 }
 
@@ -434,7 +436,6 @@ void MRectPtrArr_update(MRectPtrArr* self, float td, Player* player,
 
 void MRectPtrArr_destroy(MRectPtrArr* self) {
     for(uint i = 0; i < self->idx; i++) {
-        MRect* obj = self->arr[i];
         if(strcmp(self->arr[i]->super.type, "player") != 0)
             Rect_destroy((Rect*)self->arr[i]);
     }

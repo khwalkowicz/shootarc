@@ -82,7 +82,8 @@ void MainMenu_clean(MainMenu* self) {
 
 
 void Game_init(Game* self, SDL_Renderer* ren) {
-    self->difficulty = PLAYER_LIFES_EASY;
+    self->difficulty = PLAYER_LIFES_NORMAL;
+    self->gameStopped = 0;
 
     MRectPtrArr_ctor(&self->fg);
 
@@ -137,35 +138,41 @@ void Game_init(Game* self, SDL_Renderer* ren) {
 
 void Game_main(Game* self, Timer* timer, STATE* state,
                SDL_Event event, SDL_Renderer* ren) {
-    if(SDL_PollEvent(&event)) {
-        if(event.type == SDL_KEYDOWN) {
-            if(event.key.keysym.sym == SDLK_ESCAPE)
-                pauseToggle(timer, state);
-         }
-        else
-            SDL_PushEvent(&event);
+    if(!self->gameStopped) {
+        if(SDL_PollEvent(&event)) {
+            if(event.type == SDL_KEYDOWN) {
+                if(event.key.keysym.sym == SDLK_ESCAPE)
+                    pauseToggle(timer, state);
+            }
+            else
+                SDL_PushEvent(&event);
+        }
+
+        const uint8_t* keyStates = SDL_GetKeyboardState(NULL);
+        Win_controls(&self->player, &self->fg, timer, ren, keyStates);
+
+        LifeBox_update(&self->lifeBox, &self->player);
+
+        EnemyArr_update(&self->enemies, timer->dt, &self->fg);
+
+        MRectPtrArr_update(&self->fg, timer->dt, &self->player,
+                           &self->enemies, ren);
     }
 
-    const uint8_t* keyStates = SDL_GetKeyboardState(NULL);
-    Win_controls(&self->player, &self->fg, timer, ren, keyStates);
-
     Rect_render((Rect*)&self->player, ren);
-    Player_update(&self->player, timer->dt);
 
-    if(!self->player.lifes) {
+    Player_update(&self->player, timer->dt, &self->gameStopped,
+                  ren, &self->fg);
+
+    if((int)self->player.super.super.explosionState == 16) {
         *state = STATE_MAINMENU;
         Game_clean(self);
         Game_init(self, ren);
     }
 
-    LifeBox_update(&self->lifeBox, &self->player);
     LifeBox_render(&self->lifeBox, ren);
 
-    EnemyArr_update(&self->enemies, timer->dt, &self->fg);
-
     MRectPtrArr_render(&self->fg, ren);
-    MRectPtrArr_update(&self->fg, timer->dt, &self->player,
-                       &self->enemies, ren);
 }
 
 void Game_clean(Game* self) {

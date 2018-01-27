@@ -13,6 +13,8 @@ void Player_ctor(Player* self, uint lifes,
     self->texNorm  = loadTexture(ren, "player.png");
     self->texDown  = loadTexture(ren, "player_down.png");
 
+    self->super.super.explosionTex = loadTexture(ren, "player_explosion.png");
+
     self->cooldown = PLAYER_COOLDOWN;
     self->lifes    = lifes;
 
@@ -23,7 +25,6 @@ void Player_ctor(Player* self, uint lifes,
                self->texNorm);
 
     MRectArr_ctor(&self->shots);
-
     MRectPtrArr_add(fg, (MRect*)self);
 }
 
@@ -95,7 +96,40 @@ void Player_shoot(Player* self, MRectPtrArr* fg, SDL_Renderer* ren) {
     }
 }
 
-void Player_update(Player* self, float td) {
+void Player_update(Player* self, float td, uint* gameStopped,
+                   SDL_Renderer* ren, MRectPtrArr* fg) {
+    if(!self->lifes && !self->super.super.explosionState)
+        self->super.super.explosionState = 1;
+
+    if(0 < self->super.super.explosionState &&
+           self->super.super.explosionState < 16) {
+        SDL_Rect clip = {
+            ((int)self->super.super.explosionState % 4) *
+                    PLAYER_EXPLOSION_TILE_W,
+            ((int)self->super.super.explosionState / 4) *
+                    PLAYER_EXPLOSION_TILE_H,
+            PLAYER_EXPLOSION_TILE_W, PLAYER_EXPLOSION_TILE_H
+        };
+        renderTexture(self->super.super.explosionTex, ren,
+                      (int)self->super.super.super.x -
+                      (PLAYER_EXPLOSION_TILE_W - PLAYER_W) / 2,
+                      (int)self->super.super.super.y -
+                      (PLAYER_EXPLOSION_TILE_H - PLAYER_H) / 2,
+                      PLAYER_EXPLOSION_TILE_W, PLAYER_EXPLOSION_TILE_H,
+                      &clip
+        );
+
+        if((int)self->super.super.explosionState == 6)
+            *gameStopped = 1;
+
+        if((int)self->super.super.explosionState == 8) {
+            Rect_destroy((Rect*)self);
+            MRectPtrArr_del(fg, (MRect*)self);
+        }
+
+        self->super.super.explosionState += td / 2;
+    }
+
     if(self->cooldown > 0)
         self->cooldown -= td;
 }
@@ -123,13 +157,13 @@ void Player_handleShot(Player* self, MRectPtrArr* fg,
 
 void Player_hit(Player* self) {
     self->lifes--;
-    // EXPLOSION ANIMATION LATER ON
 }
 
 void Player_destroy(Player* self) {
     SDL_DestroyTexture(self->texUp);
     SDL_DestroyTexture(self->texDown);
     SDL_DestroyTexture(self->texNorm);
+    SDL_DestroyTexture(self->super.super.explosionTex);
     free(self->shots.arr);
 }
 
@@ -152,7 +186,7 @@ void LifeBox_ctor(LifeBox* self, Player* player, SDL_Renderer* ren) {
 }
 
 void LifeBox_update(LifeBox* self, Player* player) {
-    for(uint i = self->lifes.idx - 1; i >= player->lifes; i--)
+    for(int i = (int)self->lifes.idx - 1; i >= (int)player->lifes; i--)
         SDL_SetTextureAlphaMod(self->lifes.arr[i].super.tex, 85);
 }
 
