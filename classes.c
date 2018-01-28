@@ -443,6 +443,24 @@ void MRectPtrArr_destroy(MRectPtrArr* self) {
 }
 
 
+void Button_ctor(Button* self, float x, float y, SDL_Texture* tex,
+                 float width, float height, SDL_Texture* clicked) {
+    Rect_ctor(&self->super, "button", x, y, width, height, tex);
+    self->clicked = clicked;
+}
+
+void Button_click(Button* self) {
+    SDL_Texture* temp = self->super.tex;
+    self->super.tex = self->clicked;
+    self->clicked = temp;
+}
+
+void Button_destroy(Button* self) {
+    Rect_destroy(&self->super);
+    SDL_DestroyTexture(self->clicked);
+}
+
+
 void Background_ctor(Background* self, float pos, SDL_Renderer* ren) {
     MRect_ctor(&self->super, "background",
                pos * SCREEN_WIDTH, 0,

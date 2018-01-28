@@ -3,7 +3,8 @@
   
 #### Controls
 ##### Right-handed
-**Menu movement**: arrow keys to select, enter or space to accept  
+**Menu movement**: W A S D **or** arrow keys to select, enter or space
+to accept  
 **Steering**: W A S D **or** arrow keys  
 **Shoot**: space  
 **Pause**: esc  

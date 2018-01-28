@@ -169,6 +169,17 @@ void LifeBox_render(LifeBox* self, SDL_Renderer* ren);
 void LifeBox_destroy(LifeBox* self);
 
 
+typedef struct Button {
+    Rect super;
+    SDL_Texture* clicked;
+} Button;
+
+void Button_ctor(Button* self, float x, float y, SDL_Texture* tex,
+                 float width, float height, SDL_Texture* clicked);
+void Button_click(Button* self);
+void Button_destroy(Button* self);
+
+
 typedef struct Background {
     MRect super;
     uint  tiles_x;

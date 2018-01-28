@@ -63,12 +63,14 @@ int main() {
 
     Game game;
     Game_init(&game, ren);
+    Game_clean(&game);
 
     PauseMenu pausemenu;
     PauseMenu_init(&pausemenu, ren);
 
     GameOverScreen gameoverscreen;
     GameOverScreen_init(&gameoverscreen, ren);
+    GameOverScreen_clean(&gameoverscreen);
 
 
     /* START THE TIMER */
@@ -98,7 +100,8 @@ int main() {
 
 
         if(state == STATE_MAINMENU)
-            MainMenu_main(&mainmenu, &timer, &state, event, ren);
+            MainMenu_main(&mainmenu, &timer, &state,
+                          &game.difficulty, event, ren);
 
         if(state == STATE_GAME ||
            state == STATE_PAUSEMENU)
@@ -125,7 +128,8 @@ int main() {
         Game_clean(&game);
     if(gameoverscreen.initialized)
         GameOverScreen_clean(&gameoverscreen);
-    MainMenu_clean(&mainmenu);
+    if(mainmenu.initialized)
+        MainMenu_clean(&mainmenu);
 
     Background_destroy(&bg0);
     Background_destroy(&bg1);

@@ -15,19 +15,55 @@ static STATE STATE_GAME      = 2;
 static STATE STATE_PAUSEMENU = 3;
 static STATE STATE_GAMEOVER  = 4;
 
+static STATE STATE_MAINMENU_STARTMENU = 1;
+static STATE STATE_MAINMENU_DIFFMENU  = 2;
+
+
+typedef struct MainMenu_StartMenu {
+    Button startBtn;
+    float freeze;
+    uint initialized;
+} MainMenu_StartMenu;
+
+void MainMenu_StartMenu_init(MainMenu_StartMenu* self, SDL_Renderer* ren);
+// void MainMenu_StartMenu_main() later in this file
+void MainMenu_StartMenu_clean(MainMenu_StartMenu* self);
+
+
+typedef struct MainMenu_DiffMenu {
+    Button btns[3];
+    uint   options[3];
+    uint   choice;
+    float  freeze;
+    uint   initialized;
+} MainMenu_DiffMenu;
+
+void MainMenu_DiffMenu_init(MainMenu_DiffMenu* self, SDL_Renderer* ren);
+// void MainMenu_DiffMenu_main() later in this file
+void MainMenu_DiffMenu_clean(MainMenu_DiffMenu* self);
+
 
 typedef struct MainMenu {
     Rect  logo;
-    Rect  startBtn;
     Rect  cursor;
     float cursorState;
     Rect  copyright;
+    STATE submenu;
+    MainMenu_StartMenu startMenu;
+    MainMenu_DiffMenu diffMenu;
+    uint  initialized;
 } MainMenu;
 
 void MainMenu_init(MainMenu* self, SDL_Renderer* ren);
 void MainMenu_main(MainMenu* self, Timer* timer, STATE* state,
-                   SDL_Event event, SDL_Renderer* ren);
+                   uint* difficulty, SDL_Event event, SDL_Renderer* ren);
 void MainMenu_clean(MainMenu* self);
+
+void MainMenu_StartMenu_main(MainMenu_StartMenu* self, SDL_Event event,
+                             Timer* timer, MainMenu* super, SDL_Renderer* ren);
+void MainMenu_DiffMenu_main(MainMenu_DiffMenu* self, SDL_Event event,
+                            Timer* timer, MainMenu* super, uint* difficulty,
+                            STATE* state, SDL_Renderer* ren);
 
 
 typedef struct Game {
