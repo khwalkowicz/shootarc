@@ -36,6 +36,9 @@ static uint  LEVEL_TEXT_H = 23;
 static uint  GAMEOVER_TEXT_W = 207;
 static uint  GAMEOVER_TEXT_H = 24;
 
+static uint  YOUHAVEWON_TEXT_W = 252;
+static uint  YOUHAVEWON_TEXT_H = 24;
+
 static uint  PLAYER_W                  = 75;
 static uint  PLAYER_H                  = 75;
 static float PLAYER_VELOCITY_GOAL      = 50;

@@ -216,11 +216,10 @@ void Game_init(Game* self, SDL_Renderer* ren) {
     self->newLevelStarted = 0;
 
     MRectPtrArr_ctor(&self->fg);
-
     Player_ctor(&self->player, self->difficulty, &self->fg, ren);
     LifeBox_ctor(&self->lifeBox, &self->player, ren);
 
-    // THESE TWO LINES SHOULD LATER BE READ FROM FILE, THATS WHY SELF->NEWLEVELSTARTED IS DOUBLED NOW
+    // THESE TWO LINES SHOULD LATER BE READ FROM FILE, THEREFORE SELF->NEWLEVELSTARTED IS DOUBLED NOW
     Level_ctor(&self->level, &self->levels, &self->fg, ren);
     self->newLevelStarted = 1;
 
@@ -273,7 +272,7 @@ void Game_main(Game* self, Timer* timer, STATE* state,
     MRectPtrArr_render(&self->fg, ren);
 
     if(Level_isFinished(&self->level)) {
-        *state = STATE_GAMEOVER;
+        *state = STATE_YOUHAVEWON;
         Game_clean(self);
     }
 }
@@ -356,6 +355,60 @@ void GameOverScreen_main(GameOverScreen* self, Timer* timer,
 }
 
 void GameOverScreen_clean(GameOverScreen* self) {
+    Rect_destroy(&self->bg);
+    Rect_destroy(&self->text);
+    self->initialized = 0;
+}
+
+
+void YouHaveWonScreen_init(YouHaveWonScreen* self, SDL_Renderer* ren) {
+    SDL_Rect bg = { 0, 0, SCREEN_WIDTH, SCREEN_WIDTH };
+    SDL_Texture* black = SDL_CreateTexture(ren,
+                                           SDL_PIXELFORMAT_RGBA8888,
+                                           SDL_TEXTUREACCESS_TARGET,
+                                           SCREEN_WIDTH, SCREEN_HEIGHT);
+    SDL_SetRenderTarget(ren, black);
+    SDL_RenderDrawRect(ren, &bg);
+    SDL_RenderFillRect(ren, &bg);
+    SDL_SetRenderTarget(ren, NULL);
+
+    Rect_ctor(&self->bg, "menu", 0, 0, SCREEN_WIDTH, SCREEN_WIDTH, black);
+
+    Rect_ctor(&self->text, "text",
+              (SCREEN_WIDTH - YOUHAVEWON_TEXT_W) / 2,
+              (SCREEN_HEIGHT - YOUHAVEWON_TEXT_H) / 2,
+              YOUHAVEWON_TEXT_W, YOUHAVEWON_TEXT_H,
+              loadTexture(ren, "menus/youhavewon.png")
+    );
+
+    self->opacity     = 25;
+    self->freeze      = 25;
+    self->initialized = 1;
+}
+
+void YouHaveWonScreen_main(YouHaveWonScreen* self, Timer* timer,
+                         STATE* state, SDL_Renderer* ren) {
+    if(!self->initialized)
+        YouHaveWonScreen_init(self, ren);
+
+    self->opacity = approach(255, self->opacity, timer->dt * 10);
+
+    SDL_SetTextureAlphaMod(self->bg.tex,   (Uint8)self->opacity);
+    SDL_SetTextureAlphaMod(self->text.tex, (Uint8)self->opacity);
+
+    Rect_render(&self->bg, ren);
+    Rect_render(&self->text, ren);
+
+    if(self->opacity == 255)
+        self->freeze -= timer->dt;
+
+    if(self->freeze <= 0) {
+        *state = STATE_MAINMENU;
+        YouHaveWonScreen_clean(self);
+    }
+}
+
+void YouHaveWonScreen_clean(YouHaveWonScreen* self) {
     Rect_destroy(&self->bg);
     Rect_destroy(&self->text);
     self->initialized = 0;

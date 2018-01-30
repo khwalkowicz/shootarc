@@ -72,6 +72,9 @@ int main() {
     GameOverScreen_init(&gameoverscreen, ren);
     GameOverScreen_clean(&gameoverscreen);
 
+    YouHaveWonScreen youhavewonscreen;
+    YouHaveWonScreen_init(&youhavewonscreen, ren);
+
 
     /* START THE TIMER */
     Timer timer;
@@ -113,6 +116,9 @@ int main() {
         if(state == STATE_GAMEOVER)
             GameOverScreen_main(&gameoverscreen, &timer, &state, ren);
 
+        if(state == STATE_YOUHAVEWON)
+            YouHaveWonScreen_main(&youhavewonscreen, &timer, &state, ren);
+
         if(SDL_PollEvent(&event))
             if(event.type == SDL_QUIT)
                 gameRunning = 0;
@@ -126,6 +132,8 @@ int main() {
     PauseMenu_clean(&pausemenu);
     if(game.initialized)
         Game_clean(&game);
+    if(youhavewonscreen.initialized)
+        YouHaveWonScreen_clean(&youhavewonscreen);
     if(gameoverscreen.initialized)
         GameOverScreen_clean(&gameoverscreen);
     if(mainmenu.initialized)

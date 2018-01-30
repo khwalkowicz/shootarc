@@ -11,10 +11,11 @@
 
 
 typedef unsigned int STATE;
-static STATE STATE_MAINMENU  = 1;
-static STATE STATE_GAME      = 2;
-static STATE STATE_PAUSEMENU = 3;
-static STATE STATE_GAMEOVER  = 4;
+static STATE STATE_MAINMENU   = 1;
+static STATE STATE_GAME       = 2;
+static STATE STATE_PAUSEMENU  = 3;
+static STATE STATE_GAMEOVER   = 4;
+static STATE STATE_YOUHAVEWON = 5;
 
 static STATE STATE_MAINMENU_STARTMENU = 1;
 static STATE STATE_MAINMENU_DIFFMENU  = 2;
@@ -107,6 +108,20 @@ void GameOverScreen_init(GameOverScreen* self, SDL_Renderer* ren);
 void GameOverScreen_main(GameOverScreen* self, Timer* timer,
                          STATE* state, SDL_Renderer* ren);
 void GameOverScreen_clean(GameOverScreen* self);
+
+
+typedef struct YouHaveWonScreen {
+    Rect  bg;
+    Rect  text;
+    float opacity;
+    float freeze;
+    uint  initialized;
+} YouHaveWonScreen;
+
+void YouHaveWonScreen_init(YouHaveWonScreen* self, SDL_Renderer* ren);
+void YouHaveWonScreen_main(YouHaveWonScreen* self, Timer* timer,
+                         STATE* state, SDL_Renderer* ren);
+void YouHaveWonScreen_clean(YouHaveWonScreen* self);
 
 
 #endif //ARCSHOOT_ENGINE_H
