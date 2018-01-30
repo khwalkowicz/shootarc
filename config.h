@@ -30,6 +30,9 @@ static uint  MENU_COPYRIGHT_H = 9;
 static uint  PAUSE_MENU_W = 581;
 static uint  PAUSE_MENU_H = 457;
 
+static uint  LEVEL_TEXT_W = 106;
+static uint  LEVEL_TEXT_H = 23;
+
 static uint  GAMEOVER_TEXT_W = 207;
 static uint  GAMEOVER_TEXT_H = 24;
 
@@ -57,5 +60,8 @@ static uint  ENEMY_EXPLOSION_TILE_H = 88;
 static float ENEMY_VELOCITY_GOAL    = 20;
 
 static float WIN_VELOCITY = -5;
+
+static uint  NUMBERS_H = 23;
+static uint  NUMBERS_W[10];
 
 #endif //ARCSHOOT_CONFIG_H

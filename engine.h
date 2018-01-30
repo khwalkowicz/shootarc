@@ -7,6 +7,7 @@
 
 #include "classes.h"
 #include "window.h"
+#include "levels.h"
 
 
 typedef unsigned int STATE;
@@ -68,10 +69,13 @@ void MainMenu_DiffMenu_main(MainMenu_DiffMenu* self, SDL_Event event,
 
 typedef struct Game {
     MRectPtrArr fg;
+    LevelScreen levelScreen;
     Player   player;
     uint     difficulty;
     LifeBox  lifeBox;
-    EnemyArr enemies;
+    uint     levels;
+    Level    level;
+    uint     newLevelStarted;
     uint     gameStopped;
     uint     initialized;
 } Game;

@@ -101,31 +101,29 @@ void Enemy_explode(Enemy* self, EnemyArr* enemies,
     self->super.vectors.velocityGoal.x = 0;
     self->super.vectors.velocityGoal.y = 0;
     SDL_Rect clip = {
-        ((int)self->super.super.explosionState % 5) * ENEMY_EXPLOSION_TILE_W,
-        ((int)self->super.super.explosionState / 5) * ENEMY_EXPLOSION_TILE_H,
-        ENEMY_EXPLOSION_TILE_W, ENEMY_EXPLOSION_TILE_H
+            ((int) self->super.super.explosionState % 5) * ENEMY_EXPLOSION_TILE_W,
+            ((int) self->super.super.explosionState / 5) * ENEMY_EXPLOSION_TILE_H,
+            ENEMY_EXPLOSION_TILE_W, ENEMY_EXPLOSION_TILE_H
     };
     renderTexture(self->super.super.explosionTex, ren,
-                  (int)self->super.super.super.x -
-                          (ENEMY_EXPLOSION_W - ENEMY_W) / 2,
-                  (int)self->super.super.super.y -
-                          (ENEMY_EXPLOSION_H - ENEMY_H) / 2,
+                  (int) self->super.super.super.x -
+                  (ENEMY_EXPLOSION_W - ENEMY_W) / 2,
+                  (int) self->super.super.super.y -
+                  (ENEMY_EXPLOSION_H - ENEMY_H) / 2,
                   ENEMY_EXPLOSION_W,
                   ENEMY_EXPLOSION_H,
                   &clip
     );
     if(self->super.super.explosionState == 5) {
-        Rect_destroy((Rect*)self);
-        MRectPtrArr_del(fg, (MRect*)self);
-    }
-    if(self->super.super.explosionState == 10) {
-        size_t idx = self - enemies->arr;
-        EnemyArr_del(enemies, (uint)idx, fg);
+        Rect_destroy((Rect *) self);
     }
     if(self->super.super.explosionState < 10)
         self->super.super.explosionState++;
+    if(self->super.super.explosionState == 10) {
+        size_t idx = self - enemies->arr;
+        EnemyArr_del(enemies, (uint) idx, fg);
+    }
 }
-
 
 void EnemyArr_ctor(EnemyArr* self) {
     self->size = 1;
@@ -173,11 +171,13 @@ void EnemyArr_del(EnemyArr* self, uint id, MRectPtrArr* fg) {
     Enemy* max = self->arr + (self->idx - 1) * sizeof(Enemy);
     for(uint i = 0; i < fg->idx; i++) {
         if((MRect*)self->arr <= fg->arr[i] && fg->arr[i] <= (MRect*)max) {
-            size_t idx = ((Enemy*)fg->arr[i] - self->arr);
-            if(idx > id)
+            size_t idx = (Enemy*)fg->arr[i] - self->arr;
+            if(idx > id) {
                 fg->arr[i] = (MRect*)&self->arr[idx - 1];
+            }
         }
     }
+    MRectPtrArr_del(fg, (MRect*)&self->arr[id]);
 
     if(id <= self->idx + 1) {
         for(; id < self->idx - 1; id++)

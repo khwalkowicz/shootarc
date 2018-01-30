@@ -100,10 +100,14 @@ void MainMenu_DiffMenu_main(MainMenu_DiffMenu* self, SDL_Event event,
             }
             if(event.key.keysym.sym == SDLK_DOWN ||
                event.key.keysym.sym == SDLK_s)
-                self->choice = (self->choice + 1) % sizeof(self->options);
+                self->choice = abs(self->choice + 1) % (sizeof(self->options) / sizeof(uint));
             if(event.key.keysym.sym == SDLK_UP ||
-               event.key.keysym.sym == SDLK_w)
-                self->choice = (self->choice - 1) % sizeof(self->options);
+               event.key.keysym.sym == SDLK_w) {
+                if(self->choice == 0)
+                    self->choice = sizeof(self->options) / sizeof(uint) - 1;
+                else
+                    self->choice = (self->choice - 1) % (sizeof(self->options) / sizeof(uint));
+            }
         } else
             SDL_PushEvent(&event);
     }
@@ -208,61 +212,33 @@ void Game_init(Game* self, SDL_Renderer* ren) {
     self->gameStopped = 0;
     self->initialized = 1;
 
+    self->levels = 0;
+    self->newLevelStarted = 0;
+
     MRectPtrArr_ctor(&self->fg);
 
     Player_ctor(&self->player, self->difficulty, &self->fg, ren);
     LifeBox_ctor(&self->lifeBox, &self->player, ren);
 
-    EnemyArr_ctor(&self->enemies);
+    // THESE TWO LINES SHOULD LATER BE READ FROM FILE, THATS WHY SELF->NEWLEVELSTARTED IS DOUBLED NOW
+    Level_ctor(&self->level, &self->levels, &self->fg, ren);
+    self->newLevelStarted = 1;
 
-    // WILL REMOVE THAT IN A BIT
-    Enemy_ctor(&self->enemies,  25,  980, 179, &self->fg, ren);
-    Enemy_ctor(&self->enemies,  28, 1046, 179, &self->fg, ren);
-    Enemy_ctor(&self->enemies,  31, 1112, 179, &self->fg, ren);
-    Enemy_ctor(&self->enemies,  34, 1178, 179, &self->fg, ren);
-    Enemy_ctor(&self->enemies,  37, 1244, 179, &self->fg, ren);
-    Enemy_ctor(&self->enemies,  41, 1310, 179, &self->fg, ren);
-    for(uint i = 0; i < self->enemies.idx; i++) {
-        Enemy_addPoint(&self->enemies.arr[i], 958, 179);
-        Enemy_addPoint(&self->enemies.arr[i], 937, 133);
-        Enemy_addPoint(&self->enemies.arr[i], 888,  95);
-        Enemy_addPoint(&self->enemies.arr[i], 829,  68);
-        Enemy_addPoint(&self->enemies.arr[i], 771,  49);
-        Enemy_addPoint(&self->enemies.arr[i], 710,  44);
-        Enemy_addPoint(&self->enemies.arr[i], 647,  22);
-        Enemy_addPoint(&self->enemies.arr[i], 527,  11);
-        Enemy_addPoint(&self->enemies.arr[i], 451,   9);
-        Enemy_addPoint(&self->enemies.arr[i], 394,   7);
-        Enemy_addPoint(&self->enemies.arr[i], 333,   6);
-        Enemy_addPoint(&self->enemies.arr[i], -88, 179);
-    }
-
-    Enemy_ctor(&self->enemies,  25,  980, 311, &self->fg, ren);
-    Enemy_ctor(&self->enemies,  28, 1046, 311, &self->fg, ren);
-    Enemy_ctor(&self->enemies,  31, 1112, 311, &self->fg, ren);
-    Enemy_ctor(&self->enemies,  34, 1178, 311, &self->fg, ren);
-    Enemy_ctor(&self->enemies,  37, 1244, 311, &self->fg, ren);
-    Enemy_ctor(&self->enemies,  41, 1310, 311, &self->fg, ren);
-    for(uint i = 6; i < self->enemies.idx; i++) {
-        Enemy_addPoint(&self->enemies.arr[i], 958, 311);
-        Enemy_addPoint(&self->enemies.arr[i], 937, 361);
-        Enemy_addPoint(&self->enemies.arr[i], 888, 398);
-        Enemy_addPoint(&self->enemies.arr[i], 829, 425);
-        Enemy_addPoint(&self->enemies.arr[i], 771, 444);
-        Enemy_addPoint(&self->enemies.arr[i], 710, 458);
-        Enemy_addPoint(&self->enemies.arr[i], 647, 470);
-        Enemy_addPoint(&self->enemies.arr[i], 527, 477);
-        Enemy_addPoint(&self->enemies.arr[i], 451, 486);
-        Enemy_addPoint(&self->enemies.arr[i], 394, 488);
-        Enemy_addPoint(&self->enemies.arr[i], 333, 489);
-        Enemy_addPoint(&self->enemies.arr[i], -88, 311);
-    }
+    LevelScreen_init(&self->levelScreen, ren);
 }
 
 void Game_main(Game* self, Timer* timer, STATE* state,
                SDL_Event event, SDL_Renderer* ren) {
     if(!self->initialized)
         Game_init(self, ren);
+
+    if(self->newLevelStarted) {
+        self->levelScreen.opacity = 255;
+        self->newLevelStarted = 0;
+    }
+
+    if(self->levelScreen.opacity)
+        LevelScreen_main(&self->levelScreen, self->levels, timer->dt, ren);
 
     if(!self->gameStopped) {
         if(SDL_PollEvent(&event)) {
@@ -278,9 +254,9 @@ void Game_main(Game* self, Timer* timer, STATE* state,
         Win_controls(&self->player, &self->fg, timer, ren, keyStates);
 
         LifeBox_update(&self->lifeBox, &self->player);
-        EnemyArr_update(&self->enemies, timer->dt, &self->fg);
+        Level_update(&self->level, timer->dt, &self->fg);
         MRectPtrArr_update(&self->fg, timer->dt, &self->player,
-                           &self->enemies, ren);
+                           &self->level.enemies, ren);
     }
 
     Rect_render((Rect*)&self->player, ren);
@@ -295,12 +271,20 @@ void Game_main(Game* self, Timer* timer, STATE* state,
     LifeBox_render(&self->lifeBox, ren);
 
     MRectPtrArr_render(&self->fg, ren);
+
+    if(Level_isFinished(&self->level)) {
+        *state = STATE_GAMEOVER;
+        Game_clean(self);
+    }
 }
 
 void Game_clean(Game* self) {
     MRectPtrArr_destroy(&self->fg);
     LifeBox_destroy(&self->lifeBox);
     Player_destroy(&self->player);
+    if(self->levels > 0)
+        Level_destroy(&self->level);
+    LevelScreen_clear(&self->levelScreen);
     self->initialized = 0;
 }
 
