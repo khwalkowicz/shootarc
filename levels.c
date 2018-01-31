@@ -5,57 +5,37 @@
 #include "levels.h"
 #include "window.h"
 
-void Level_ctor(Level* self, uint* levels,
-                MRectPtrArr* fg, SDL_Renderer* ren) {
+const char* getfield(char* line, int num) {
+    char* tmp = strdup(line);
+    const char* tok;
+    for (tok = strtok(tmp, ",");
+         tok && *tok;
+         tok = strtok(NULL, ",\n"))
+    {
+        if (!--num)
+            return tok;
+    }
+    return NULL;
+}
+
+const uint getlen(char* line) {
+    char* tmp = strdup(line);
+    uint counter = 0;
+    char* tok;
+    tok = strtok(tmp, ",");
+    while(tok != NULL) {
+        counter++;
+        tok = strtok(NULL, ",");
+    }
+    return counter;
+}
+
+
+void Level_ctor(Level* self, uint* levels) {
     (*levels)++;
     self->number = *levels;
 
-
-
     EnemyArr_ctor(&self->enemies);
-
-    // WILL REMOVE THAT IN A BIT
-    Enemy_ctor(&self->enemies,  25,  980, 179, fg, ren);
-    Enemy_ctor(&self->enemies,  28, 1046, 179, fg, ren);
-    Enemy_ctor(&self->enemies,  31, 1112, 179, fg, ren);
-    Enemy_ctor(&self->enemies,  34, 1178, 179, fg, ren);
-    Enemy_ctor(&self->enemies,  37, 1244, 179, fg, ren);
-    Enemy_ctor(&self->enemies,  41, 1310, 179, fg, ren);
-    for(uint i = 0; i < self->enemies.idx; i++) {
-        Enemy_addPoint(&self->enemies.arr[i], 958, 179);
-        Enemy_addPoint(&self->enemies.arr[i], 937, 133);
-        Enemy_addPoint(&self->enemies.arr[i], 888,  95);
-        Enemy_addPoint(&self->enemies.arr[i], 829,  68);
-        Enemy_addPoint(&self->enemies.arr[i], 771,  49);
-        Enemy_addPoint(&self->enemies.arr[i], 710,  44);
-        Enemy_addPoint(&self->enemies.arr[i], 647,  22);
-        Enemy_addPoint(&self->enemies.arr[i], 527,  11);
-        Enemy_addPoint(&self->enemies.arr[i], 451,   9);
-        Enemy_addPoint(&self->enemies.arr[i], 394,   7);
-        Enemy_addPoint(&self->enemies.arr[i], 333,   6);
-        Enemy_addPoint(&self->enemies.arr[i], -88, 179);
-    }
-
-    Enemy_ctor(&self->enemies,  25,  980, 311, fg, ren);
-    Enemy_ctor(&self->enemies,  28, 1046, 311, fg, ren);
-    Enemy_ctor(&self->enemies,  31, 1112, 311, fg, ren);
-    Enemy_ctor(&self->enemies,  34, 1178, 311, fg, ren);
-    Enemy_ctor(&self->enemies,  37, 1244, 311, fg, ren);
-    Enemy_ctor(&self->enemies,  41, 1310, 311, fg, ren);
-    for(uint i = 6; i < self->enemies.idx; i++) {
-        Enemy_addPoint(&self->enemies.arr[i], 958, 311);
-        Enemy_addPoint(&self->enemies.arr[i], 937, 361);
-        Enemy_addPoint(&self->enemies.arr[i], 888, 398);
-        Enemy_addPoint(&self->enemies.arr[i], 829, 425);
-        Enemy_addPoint(&self->enemies.arr[i], 771, 444);
-        Enemy_addPoint(&self->enemies.arr[i], 710, 458);
-        Enemy_addPoint(&self->enemies.arr[i], 647, 470);
-        Enemy_addPoint(&self->enemies.arr[i], 527, 477);
-        Enemy_addPoint(&self->enemies.arr[i], 451, 486);
-        Enemy_addPoint(&self->enemies.arr[i], 394, 488);
-        Enemy_addPoint(&self->enemies.arr[i], 333, 489);
-        Enemy_addPoint(&self->enemies.arr[i], -88, 311);
-    }
 }
 
 void Level_update(Level* self, float dt, MRectPtrArr* fg) {
@@ -155,4 +135,55 @@ void LevelScreen_clear(LevelScreen* self) {
     Rect_destroy(&self->text);
     for(uint i = 0; i < 10; i++)
         SDL_DestroyTexture(self->numbers[i]);
+}
+
+
+uint LevelFile_open(LevelFile* self, uint number) {
+    uint temp = number;
+    uint numberLen = 0;
+    while(temp) {
+        temp /= 10;
+        numberLen++;
+    }
+
+    char* path = malloc(sizeof(LEVELSPATH) + (numberLen + 1) * sizeof(char));
+    sprintf(path, "%s%u", LEVELSPATH, number);
+
+    FILE* levelFile = fopen(path, "r+");
+    if(!levelFile) {
+        fprintf(stderr, "\nLevel_read: Unable to open file %s . Aborting.\n",
+                path);
+        return 1;
+    }
+    self->levelFile = levelFile;
+    return 0;
+}
+
+Level LevelFile_read(LevelFile* self, uint* levels,
+                     MRectPtrArr* fg, SDL_Renderer* ren) {
+    Level new;
+    Level_ctor(&new, levels);
+
+    char line[1024];
+    while(fgets(line, 1024, self->levelFile)) {
+        uint len = getlen(line);
+        Enemy_ctor(&new.enemies,
+                   (float)strtod(getfield(line, 1), NULL),
+                   (float)strtod(getfield(line, 2), NULL),
+                   (float)strtod(getfield(line, 3), NULL),
+                   fg, ren
+        );
+        for(uint i = 4; i < len - 1; i = i + 2)
+            Enemy_addPoint(&new.enemies.arr[new.enemies.idx - 1],
+                           (float)strtod(getfield(line, i), NULL),
+                           (float)strtod(getfield(line, i + 1), NULL)
+            );
+    }
+
+    rewind(self->levelFile);
+    return new;
+}
+
+void LevelFile_destroy(LevelFile* self) {
+    fclose(self->levelFile);
 }

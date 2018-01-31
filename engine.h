@@ -82,9 +82,9 @@ typedef struct Game {
     uint     initialized;
 } Game;
 
-void Game_init(Game* self, SDL_Renderer* ren);
+void Game_init(Game* self, LevelFile* levelFile, SDL_Renderer* ren);
 void Game_main(Game* self, Timer* timer, STATE* state,
-               SDL_Event event, SDL_Renderer* ren);
+               LevelFile* levelFile, SDL_Event event, SDL_Renderer* ren);
 void Game_clean(Game* self);
 
 

@@ -7,11 +7,12 @@
 
 typedef unsigned int uint;
 
-static char WINDOW_TITLE[] = "ArcShoot alpha";
-static uint SCREEN_WIDTH  = 960;
-static uint SCREEN_HEIGHT = 540;
+static char  WINDOW_TITLE[] = "ArcShoot alpha";
+static uint  SCREEN_WIDTH   = 960;
+static uint  SCREEN_HEIGHT  = 540;
 
-static char ASSETPATH[] = "../assets/";
+static char  LEVELSPATH[] = "../bin/";
+static char  ASSETPATH[]  = "../assets/";
 
 static char* BG_TILES_PATH = "sky/";
 static uint  BG_TILES_Q    = 24;

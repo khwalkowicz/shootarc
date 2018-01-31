@@ -14,8 +14,7 @@ typedef struct Level {
     EnemyArr enemies;
 } Level;
 
-void Level_ctor(Level* self, uint* levels,
-                MRectPtrArr* fg, SDL_Renderer* ren);
+void Level_ctor(Level* self, uint* levels);
 void Level_update(Level* self, float dt, MRectPtrArr* fg);
 uint Level_isFinished(Level* self);
 void Level_destroy(Level* self);
@@ -33,5 +32,15 @@ void LevelScreen_init(LevelScreen* self, SDL_Renderer* ren);
 void LevelScreen_main(LevelScreen* self, uint number,
                       double dt, SDL_Renderer* ren);
 void LevelScreen_clear(LevelScreen* self);
+
+
+typedef struct LevelFile {
+    FILE* levelFile;
+} LevelFile;
+
+uint  LevelFile_open(LevelFile* self, uint number);
+Level LevelFile_read(LevelFile* self, uint* levels,
+                     MRectPtrArr* fg, SDL_Renderer* ren);
+void  LevelFile_destroy(LevelFile* self);
 
 #endif //ARCSHOOT_LEVELS_H

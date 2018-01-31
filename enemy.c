@@ -60,7 +60,6 @@ void Enemy_delPoint(Enemy* self, EnemyArr* enemies, MRectPtrArr* fg) {
         self->idx--;
     } else {
         Rect_destroy((Rect*)self);
-        MRectPtrArr_del(fg, (MRect*)self);
         size_t id = self - enemies->arr;
         EnemyArr_del(enemies, (uint)id, fg);
     }

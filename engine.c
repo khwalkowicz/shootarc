@@ -208,7 +208,7 @@ void MainMenu_clean(MainMenu* self) {
 }
 
 
-void Game_init(Game* self, SDL_Renderer* ren) {
+void Game_init(Game* self, LevelFile* levelFile, SDL_Renderer* ren) {
     self->gameStopped = 0;
     self->initialized = 1;
 
@@ -220,17 +220,16 @@ void Game_init(Game* self, SDL_Renderer* ren) {
     Player_ctor(&self->player, self->difficulty, &self->fg, ren);
     LifeBox_ctor(&self->lifeBox, &self->player, ren);
 
-    // THESE TWO LINES SHOULD LATER BE READ FROM FILE, THEREFORE SELF->NEWLEVELSTARTED IS DOUBLED NOW
-    Level_ctor(&self->level, &self->levels, &self->fg, ren);
+    self->level = LevelFile_read(levelFile, &self->levels, &self->fg, ren);
     self->newLevelStarted = 1;
 
     LevelScreen_init(&self->levelScreen, ren);
 }
 
 void Game_main(Game* self, Timer* timer, STATE* state,
-               SDL_Event event, SDL_Renderer* ren) {
+               LevelFile* levelFile, SDL_Event event, SDL_Renderer* ren) {
     if(!self->initialized)
-        Game_init(self, ren);
+        Game_init(self, levelFile, ren);
 
     if(self->newLevelStarted) {
         self->levelScreen.opacity = 255;
@@ -257,6 +256,7 @@ void Game_main(Game* self, Timer* timer, STATE* state,
         Level_update(&self->level, timer->dt, &self->fg);
         MRectPtrArr_update(&self->fg, timer->dt, &self->player,
                            &self->level.enemies, ren);
+
     }
 
     Rect_render((Rect*)&self->player, ren);
