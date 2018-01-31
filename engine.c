@@ -208,11 +208,14 @@ void MainMenu_clean(MainMenu* self) {
 }
 
 
-void Game_init(Game* self, LevelFile* levelFile, SDL_Renderer* ren) {
+void Game_init(Game* self, uint gameContinue, SDL_Renderer* ren) {
     self->gameStopped = 0;
     self->initialized = 1;
 
-    self->levels = 0;
+    if(!gameContinue)
+        self->levels = 0;
+
+    self->levelsMax = LEVELS_QNT;
     self->newLevelStarted = 0;
     self->freeze = 0;
 
@@ -220,16 +223,31 @@ void Game_init(Game* self, LevelFile* levelFile, SDL_Renderer* ren) {
     Player_ctor(&self->player, self->difficulty, &self->fg, ren);
     LifeBox_ctor(&self->lifeBox, &self->player, ren);
 
-    self->level = LevelFile_read(levelFile, &self->levels, &self->fg, ren);
+    if(self->levels < self->levelsMax) {
+        if(self->levels)
+            LevelFile_destroy(&self->levelFile);
+        LevelFile_open(&self->levelFile, self->levelsMax);
+        self->levels++;
+    }
+
+    self->level = LevelFile_read(&self->levelFile, self->levels, &self->fg, ren);
     self->newLevelStarted = 1;
 
     LevelScreen_init(&self->levelScreen, ren);
 }
 
+void Game_nextLevel(Game* self, STATE* state, SDL_Renderer* ren) {
+    Game_clean(self);
+    if(self->levels == self->levelsMax)
+        *state = STATE_YOUHAVEWON;
+    else
+        Game_init(self, 1, ren);
+}
+
 void Game_main(Game* self, Timer* timer, STATE* state,
-               LevelFile* levelFile, SDL_Event event, SDL_Renderer* ren) {
+               SDL_Event event, SDL_Renderer* ren) {
     if(!self->initialized)
-        Game_init(self, levelFile, ren);
+        Game_init(self, 0, ren);
 
     if(self->newLevelStarted) {
         self->levelScreen.opacity = 255;
@@ -277,10 +295,9 @@ void Game_main(Game* self, Timer* timer, STATE* state,
         self->freeze = 75;
 
     if(self->freeze) {
-        if(self->freeze <= 1) {
-            *state = STATE_YOUHAVEWON;
-            Game_clean(self);
-        } else
+        if(self->freeze <= 1)
+            Game_nextLevel(self, state, ren);
+        else
             self->freeze -= timer->dt;
     }
 }
@@ -292,6 +309,7 @@ void Game_clean(Game* self) {
     if(self->levels > 0)
         Level_destroy(&self->level);
     LevelScreen_clear(&self->levelScreen);
+    LevelFile_destroy(&self->levelFile);
     self->initialized = 0;
 }
 

@@ -71,20 +71,22 @@ void MainMenu_DiffMenu_main(MainMenu_DiffMenu* self, SDL_Event event,
 typedef struct Game {
     MRectPtrArr fg;
     LevelScreen levelScreen;
-    Player   player;
-    uint     difficulty;
-    LifeBox  lifeBox;
-    uint     levels;
-    Level    level;
-    uint     newLevelStarted;
-    uint     freeze;
-    uint     gameStopped;
-    uint     initialized;
+    Player      player;
+    uint        difficulty;
+    LifeBox     lifeBox;
+    uint        levels;
+    uint        levelsMax;
+    LevelFile   levelFile;
+    Level       level;
+    uint        newLevelStarted;
+    uint        freeze;
+    uint        gameStopped;
+    uint        initialized;
 } Game;
 
-void Game_init(Game* self, LevelFile* levelFile, SDL_Renderer* ren);
+void Game_init(Game* self, uint gameContinue, SDL_Renderer* ren);
 void Game_main(Game* self, Timer* timer, STATE* state,
-               LevelFile* levelFile, SDL_Event event, SDL_Renderer* ren);
+               SDL_Event event, SDL_Renderer* ren);
 void Game_clean(Game* self);
 
 

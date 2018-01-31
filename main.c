@@ -61,11 +61,8 @@ int main() {
     MainMenu mainmenu;
     MainMenu_init(&mainmenu, ren);
 
-    LevelFile level1;
-    LevelFile_open(&level1, 1);
-
     Game game;
-    Game_init(&game, &level1, ren);
+    Game_init(&game, 0, ren);
     Game_clean(&game);
 
     PauseMenu pausemenu;
@@ -110,7 +107,7 @@ int main() {
 
         if(state == STATE_GAME ||
            state == STATE_PAUSEMENU)
-            Game_main(&game, &timer, &state, &level1, event, ren);
+            Game_main(&game, &timer, &state, event, ren);
 
         if(state == STATE_PAUSEMENU)
             PauseMenu_main(&pausemenu, ren);
@@ -131,7 +128,6 @@ int main() {
 
     /* DESTROY MALLOCS, TEXTURES AND SDL */
 
-    LevelFile_destroy(&level1);
     PauseMenu_clean(&pausemenu);
     if(game.initialized)
         Game_clean(&game);

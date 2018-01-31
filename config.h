@@ -11,6 +11,8 @@ static char  WINDOW_TITLE[] = "ArcShoot alpha";
 static uint  SCREEN_WIDTH   = 960;
 static uint  SCREEN_HEIGHT  = 540;
 
+static uint  LEVELS_QNT = 2;
+
 static char  LEVELSPATH[] = "../bin/";
 static char  ASSETPATH[]  = "../assets/";
 

@@ -31,9 +31,8 @@ const uint getlen(char* line) {
 }
 
 
-void Level_ctor(Level* self, uint* levels) {
-    (*levels)++;
-    self->number = *levels;
+void Level_ctor(Level* self, uint levels) {
+    self->number = levels;
 
     EnemyArr_ctor(&self->enemies);
 }
@@ -159,7 +158,7 @@ uint LevelFile_open(LevelFile* self, uint number) {
     return 0;
 }
 
-Level LevelFile_read(LevelFile* self, uint* levels,
+Level LevelFile_read(LevelFile* self, uint levels,
                      MRectPtrArr* fg, SDL_Renderer* ren) {
     Level new;
     Level_ctor(&new, levels);
