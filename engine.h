@@ -77,6 +77,7 @@ typedef struct Game {
     uint     levels;
     Level    level;
     uint     newLevelStarted;
+    uint     freeze;
     uint     gameStopped;
     uint     initialized;
 } Game;

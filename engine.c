@@ -100,7 +100,7 @@ void MainMenu_DiffMenu_main(MainMenu_DiffMenu* self, SDL_Event event,
             }
             if(event.key.keysym.sym == SDLK_DOWN ||
                event.key.keysym.sym == SDLK_s)
-                self->choice = abs(self->choice + 1) % (sizeof(self->options) / sizeof(uint));
+                self->choice = (self->choice + 1) % (sizeof(self->options) / sizeof(uint));
             if(event.key.keysym.sym == SDLK_UP ||
                event.key.keysym.sym == SDLK_w) {
                 if(self->choice == 0)
@@ -214,6 +214,7 @@ void Game_init(Game* self, SDL_Renderer* ren) {
 
     self->levels = 0;
     self->newLevelStarted = 0;
+    self->freeze = 0;
 
     MRectPtrArr_ctor(&self->fg);
     Player_ctor(&self->player, self->difficulty, &self->fg, ren);
@@ -271,9 +272,16 @@ void Game_main(Game* self, Timer* timer, STATE* state,
 
     MRectPtrArr_render(&self->fg, ren);
 
-    if(Level_isFinished(&self->level)) {
-        *state = STATE_YOUHAVEWON;
-        Game_clean(self);
+    if(Level_isFinished(&self->level) &&
+       !self->freeze)
+        self->freeze = 75;
+
+    if(self->freeze) {
+        if(self->freeze <= 1) {
+            *state = STATE_YOUHAVEWON;
+            Game_clean(self);
+        } else
+            self->freeze -= timer->dt;
     }
 }
 
