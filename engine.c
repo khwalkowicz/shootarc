@@ -226,7 +226,7 @@ void Game_init(Game* self, uint gameContinue, SDL_Renderer* ren) {
     if(self->levels < self->levelsMax) {
         if(self->levels)
             LevelFile_destroy(&self->levelFile);
-        LevelFile_open(&self->levelFile, self->levelsMax);
+        LevelFile_open(&self->levelFile, self->levels + 1);
         self->levels++;
     }
 
